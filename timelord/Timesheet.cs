@@ -1,4 +1,5 @@
-﻿using System.Data.SQLite;
+﻿using System.Data;
+using System.Data.SQLite;
 using System.IO;
 using System.Windows.Forms;
 
@@ -8,6 +9,7 @@ namespace timelord
     {
         private string filePath;
         private SQLiteConnection sqlite;
+        private SQLiteDataAdapter adapter;
 
         /// <summary>
         /// Creates a timesheet object that determines if the filepath exists.
@@ -63,10 +65,27 @@ namespace timelord
         /// </summary>
         private void createSchema()
         {
-            string query = "CREATE TABLE timesheet (id int primary key not null, taskname text, starttime integer, endtime integer, hourlycharge real, paid integer default 0)";
+            string query = "CREATE TABLE timesheet (id int primary key not null, taskname text, timeinseconds int, date text, paid integer default 0)";
             SQLiteCommand cmd = new SQLiteCommand(query, sqlite);
             cmd.ExecuteNonQuery();
 
+        }
+
+        /// <summary>
+        /// Fills and returns a dataset with the data from the database
+        /// </summary>
+        /// <returns>A new dataset with the same data as the database</returns>
+        public DataSet toDataSet()
+        {
+            DataSet data = new DataSet();
+            adapter = new SQLiteDataAdapter("select id,taskname,timeinseconds,date,paid from timesheet", sqlite);
+            adapter.Fill(data);
+            return data;
+        }
+
+        public void Update(DataSet dataset)
+        {
+            this.adapter.Update(dataset);
         }
 
         public void close()

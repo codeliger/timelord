@@ -39,6 +39,9 @@
             this.txtTaskName = new System.Windows.Forms.TextBox();
             this.btnTaskStart = new System.Windows.Forms.Button();
             this.lblTaskName = new System.Windows.Forms.Label();
+            this.lblTaskDuration = new System.Windows.Forms.Label();
+            this.btnTaskClear = new System.Windows.Forms.Button();
+            this.btnTaskSave = new System.Windows.Forms.Button();
             this.msMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTimesheet)).BeginInit();
             this.SuspendLayout();
@@ -75,7 +78,7 @@
             // 
             this.mnuTimesheetNew.Name = "mnuTimesheetNew";
             this.mnuTimesheetNew.Size = new System.Drawing.Size(152, 22);
-            this.mnuTimesheetNew.Text = "New";
+            this.mnuTimesheetNew.Text = "Create";
             this.mnuTimesheetNew.Click += new System.EventHandler(this.mnuTimesheetNew_Click);
             // 
             // mnuTimesheetClose
@@ -103,7 +106,10 @@
             // 
             // dgvTimesheet
             // 
+            this.dgvTimesheet.AllowUserToAddRows = false;
+            this.dgvTimesheet.AllowUserToDeleteRows = false;
             this.dgvTimesheet.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvTimesheet.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnKeystroke;
             this.dgvTimesheet.Location = new System.Drawing.Point(0, 67);
             this.dgvTimesheet.Name = "dgvTimesheet";
             this.dgvTimesheet.Size = new System.Drawing.Size(923, 571);
@@ -113,7 +119,7 @@
             // 
             this.txtTaskName.AcceptsReturn = true;
             this.txtTaskName.Enabled = false;
-            this.txtTaskName.Location = new System.Drawing.Point(130, 41);
+            this.txtTaskName.Location = new System.Drawing.Point(80, 41);
             this.txtTaskName.Name = "txtTaskName";
             this.txtTaskName.Size = new System.Drawing.Size(271, 20);
             this.txtTaskName.TabIndex = 2;
@@ -121,22 +127,55 @@
             // btnTaskStart
             // 
             this.btnTaskStart.Enabled = false;
-            this.btnTaskStart.Location = new System.Drawing.Point(407, 39);
+            this.btnTaskStart.ImageAlign = System.Drawing.ContentAlignment.TopRight;
+            this.btnTaskStart.Location = new System.Drawing.Point(440, 39);
             this.btnTaskStart.Name = "btnTaskStart";
             this.btnTaskStart.Size = new System.Drawing.Size(75, 23);
             this.btnTaskStart.TabIndex = 3;
             this.btnTaskStart.Text = "Start";
             this.btnTaskStart.UseVisualStyleBackColor = true;
+            this.btnTaskStart.Click += new System.EventHandler(this.btnTaskStart_Click);
             // 
             // lblTaskName
             // 
             this.lblTaskName.AutoSize = true;
             this.lblTaskName.Enabled = false;
-            this.lblTaskName.Location = new System.Drawing.Point(62, 44);
+            this.lblTaskName.Location = new System.Drawing.Point(12, 44);
             this.lblTaskName.Name = "lblTaskName";
             this.lblTaskName.Size = new System.Drawing.Size(62, 13);
             this.lblTaskName.TabIndex = 4;
             this.lblTaskName.Text = "Task Name";
+            // 
+            // lblTaskDuration
+            // 
+            this.lblTaskDuration.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTaskDuration.Location = new System.Drawing.Point(357, 41);
+            this.lblTaskDuration.Name = "lblTaskDuration";
+            this.lblTaskDuration.Size = new System.Drawing.Size(77, 20);
+            this.lblTaskDuration.TabIndex = 5;
+            this.lblTaskDuration.Text = "00:00:00";
+            // 
+            // btnTaskClear
+            // 
+            this.btnTaskClear.Enabled = false;
+            this.btnTaskClear.Location = new System.Drawing.Point(836, 39);
+            this.btnTaskClear.Name = "btnTaskClear";
+            this.btnTaskClear.Size = new System.Drawing.Size(75, 23);
+            this.btnTaskClear.TabIndex = 6;
+            this.btnTaskClear.Text = "Clear";
+            this.btnTaskClear.UseVisualStyleBackColor = true;
+            this.btnTaskClear.Click += new System.EventHandler(this.btnTaskClear_Click);
+            // 
+            // btnTaskSave
+            // 
+            this.btnTaskSave.Enabled = false;
+            this.btnTaskSave.Location = new System.Drawing.Point(521, 39);
+            this.btnTaskSave.Name = "btnTaskSave";
+            this.btnTaskSave.Size = new System.Drawing.Size(75, 23);
+            this.btnTaskSave.TabIndex = 7;
+            this.btnTaskSave.Text = "Save";
+            this.btnTaskSave.UseVisualStyleBackColor = true;
+            this.btnTaskSave.Click += new System.EventHandler(this.btnTaskSave_Click);
             // 
             // MainWindow
             // 
@@ -144,6 +183,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(923, 639);
+            this.Controls.Add(this.btnTaskSave);
+            this.Controls.Add(this.btnTaskClear);
+            this.Controls.Add(this.lblTaskDuration);
             this.Controls.Add(this.lblTaskName);
             this.Controls.Add(this.btnTaskStart);
             this.Controls.Add(this.txtTaskName);
@@ -173,6 +215,9 @@
         private System.Windows.Forms.Button btnTaskStart;
         private System.Windows.Forms.Label lblTaskName;
         private System.Windows.Forms.ToolStripMenuItem mnuTimesheetClose;
+        private System.Windows.Forms.Label lblTaskDuration;
+        private System.Windows.Forms.Button btnTaskClear;
+        private System.Windows.Forms.Button btnTaskSave;
     }
 }
 
