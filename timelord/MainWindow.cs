@@ -97,14 +97,21 @@ namespace timelord
 
         private void updateDgvTimesheet()
         {
+            // The DataGridView preserves rows from old datasets when we update-- we need to remove them.
+            dgvTimesheet.Rows.Clear();
+
             foreach (DataRow r in dataset.Tables[0].Rows)
             {
-                List<object> row = new List<object>();
+                // Instead of a list, create a new row for the DataGridView.
+                DataGridViewRow row = new DataGridViewRow();
 
-                row.Add(r["taskname"].ToString());
-                row.Add(r["timeinseconds"].ToString());
-                row.Add(r["date"].ToString());
-                row.Add(r["paid"].ToString());
+                // Populate the row with cells.
+                row.CreateCells(dgvTimesheet);
+
+                row.Cells[0].Value = r["taskname"].ToString();
+                row.Cells[1].Value = r["timeinseconds"].ToString();
+                row.Cells[2].Value = r["date"].ToString();
+                row.Cells[3].Value = r["paid"].ToString();
 
                 dgvTimesheet.Rows.Add(row);
             }
