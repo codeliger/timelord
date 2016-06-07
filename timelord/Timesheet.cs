@@ -13,6 +13,7 @@ namespace timelord
         private string filePath;
         private SQLiteConnection sqlite;
         private SQLiteDataAdapter adapter;
+        private SQLiteCommandBuilder builder;
 
         /// <summary>
         /// Creates a timesheet object that determines if the filepath exists.
@@ -47,7 +48,7 @@ namespace timelord
         }
 
         /// <summary>
-        /// Creates the databse connection
+        /// Creates the database connection
         /// </summary>
         private void openDatabase()
         {
@@ -57,7 +58,16 @@ namespace timelord
             {
                 sqlite.Open();
 
-            }catch(SQLiteException e)
+                adapter = new SQLiteDataAdapter("select id,taskname,timeinseconds,date,paid from timesheet", sqlite);
+
+                builder = new SQLiteCommandBuilder(adapter);
+
+                adapter.UpdateCommand = builder.GetUpdateCommand();
+                adapter.DeleteCommand = builder.GetDeleteCommand();
+                adapter.InsertCommand = builder.GetInsertCommand();
+
+            }
+            catch(SQLiteException e)
             {
                 MessageBox.Show(e.Message);
             }
@@ -69,7 +79,9 @@ namespace timelord
         private void createSchema()
         {
             string query = "CREATE TABLE timesheet (id int primary key not null, taskname text, timeinseconds int, date text, paid integer default 0)";
+
             SQLiteCommand cmd = new SQLiteCommand(query, sqlite);
+
             cmd.ExecuteNonQuery();
 
         }
@@ -81,8 +93,9 @@ namespace timelord
         public DataSet toDataSet()
         {
             DataSet data = new DataSet();
-            adapter = new SQLiteDataAdapter("select id,taskname,timeinseconds,date,paid from timesheet", sqlite);
-            adapter.Fill(data);
+
+            this.adapter.Fill(data);
+
             return data;
         }
 

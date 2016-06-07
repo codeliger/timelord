@@ -29,6 +29,8 @@ namespace timelord
         {
             InitializeComponent();
 
+            txtTaskName.GotFocus += TxtTaskName_GotFocus;
+
             // initialize a timer for counting seconds
             timer = new Timer();
             timer.Tick += Timer_Tick;
@@ -42,6 +44,11 @@ namespace timelord
             dgvTimesheet.Columns.Add("date", "Date");
             //dgvTimesheet.Columns.Add("paid", "Paid");
 
+        }
+
+        private void TxtTaskName_GotFocus(object sender, EventArgs e)
+        {
+            txtTaskName.SelectAll();
         }
 
         /// <summary>
@@ -122,7 +129,7 @@ namespace timelord
                 row.CreateCells(dgvTimesheet);
 
                 row.Cells[0].Value = r["taskname"].ToString();
-                row.Cells[1].Value = r["timeinseconds"].ToString();
+                row.Cells[1].Value = TimeSpan.FromSeconds(double.Parse(r["timeinseconds"].ToString()));
                 row.Cells[2].Value = r["date"].ToString();
                 //row.Cells[3].Value = r["paid"].ToString();
 
@@ -224,8 +231,11 @@ namespace timelord
         /// <param name="time">The time in seconds to set it to</param>
         private void setTimerText(int time)
         {
-            lblTaskDuration.Text = TimeSpan.FromSeconds(time).ToString(@"hh\:mm\:ss");
+            lblTaskDuration.Text = TimeSpan.FromSeconds(time).ToString();
         }
+
+        
+
     }
 
 }

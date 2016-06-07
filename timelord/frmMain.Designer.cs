@@ -179,7 +179,7 @@
             this.btnTaskSave.UseVisualStyleBackColor = true;
             this.btnTaskSave.Click += new System.EventHandler(this.btnTaskSave_Click);
             // 
-            // MainWindow
+            // frmMain
             // 
             this.AcceptButton = this.btnTaskStart;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -194,7 +194,7 @@
             this.Controls.Add(this.dgvTimesheet);
             this.Controls.Add(this.msMain);
             this.MainMenuStrip = this.msMain;
-            this.Name = "MainWindow";
+            this.Name = "frmMain";
             this.Text = "Timelord";
             this.msMain.ResumeLayout(false);
             this.msMain.PerformLayout();
