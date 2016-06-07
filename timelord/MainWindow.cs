@@ -26,6 +26,12 @@ namespace timelord
             timer.Tick += Timer_Tick;
             timer.Interval = 1000;
             lblTaskDuration.Text = TimeSpan.FromSeconds(0).ToString(@"hh\:mm\:ss");
+
+            dgvTimesheet.Columns.Add("taskname", "Task");
+            dgvTimesheet.Columns.Add("timeinseconds", "Time");
+            dgvTimesheet.Columns.Add("date", "Date");
+            dgvTimesheet.Columns.Add("paid", "Paid");
+
         }
 
         /// <summary>
@@ -95,10 +101,10 @@ namespace timelord
             {
                 List<object> row = new List<object>();
 
-                row.Add(r["taskname"]);
-                row.Add(r["timeinseconds"]);
-                row.Add(r["date"]);
-                row.Add(r["paid"]);
+                row.Add(r["taskname"].ToString());
+                row.Add(r["timeinseconds"].ToString());
+                row.Add(r["date"].ToString());
+                row.Add(r["paid"].ToString());
 
                 dgvTimesheet.Rows.Add(row);
             }
