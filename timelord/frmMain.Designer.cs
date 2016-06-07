@@ -1,6 +1,6 @@
 ﻿namespace timelord
 {
-    partial class MainWindow
+    partial class frmMain
     {
         /// <summary>
         /// Required designer variable.
@@ -109,11 +109,11 @@
             this.dgvTimesheet.AllowUserToAddRows = false;
             this.dgvTimesheet.AllowUserToDeleteRows = false;
             this.dgvTimesheet.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvTimesheet.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
             this.dgvTimesheet.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvTimesheet.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnKeystroke;
             this.dgvTimesheet.Location = new System.Drawing.Point(0, 67);
             this.dgvTimesheet.Name = "dgvTimesheet";
+            this.dgvTimesheet.RowHeadersVisible = false;
             this.dgvTimesheet.Size = new System.Drawing.Size(923, 571);
             this.dgvTimesheet.TabIndex = 1;
             // 

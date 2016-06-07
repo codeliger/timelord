@@ -5,6 +5,9 @@ using System.Windows.Forms;
 
 namespace timelord
 {
+    /// <summary>
+    /// Manages the tasks database
+    /// </summary>
     class Timesheet
     {
         private string filePath;
@@ -83,11 +86,18 @@ namespace timelord
             return data;
         }
 
+        /// <summary>
+        /// Updates the dataset
+        /// </summary>
+        /// <param name="dataset"></param>
         public void Update(DataSet dataset)
         {
             this.adapter.Update(dataset);
         }
 
+        /// <summary>
+        /// Closes the database connection
+        /// </summary>
         public void close()
         {
             sqlite.Close();
