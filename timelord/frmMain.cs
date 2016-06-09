@@ -11,7 +11,10 @@ using System.Windows.Forms;
 
 namespace timelord
 {
-    public partial class MainWindow : Form
+    /// <summary>
+    /// the main time tracking form
+    /// </summary>
+    public partial class frmMain : Form
     {
         Timesheet timesheet;
         DataSet dataset;
@@ -19,19 +22,33 @@ namespace timelord
         int time;
         bool timerState = false;
 
-        public MainWindow()
+        /// <summary>
+        /// sets up the form
+        /// </summary>
+        public frmMain()
         {
             InitializeComponent();
+
+            txtTaskName.GotFocus += TxtTaskName_GotFocus;
+
+            // initialize a timer for counting seconds
             timer = new Timer();
             timer.Tick += Timer_Tick;
             timer.Interval = 1000;
+
+            // reset duration
             lblTaskDuration.Text = TimeSpan.FromSeconds(0).ToString(@"hh\:mm\:ss");
 
             dgvTimesheet.Columns.Add("taskname", "Task");
             dgvTimesheet.Columns.Add("timeinseconds", "Time");
             dgvTimesheet.Columns.Add("date", "Date");
-            dgvTimesheet.Columns.Add("paid", "Paid");
+            //dgvTimesheet.Columns.Add("paid", "Paid");
 
+        }
+
+        private void TxtTaskName_GotFocus(object sender, EventArgs e)
+        {
+            txtTaskName.SelectAll();
         }
 
         /// <summary>
@@ -92,9 +109,12 @@ namespace timelord
             lblTaskName.Enabled = true;
             btnTaskSave.Enabled = false;
 
-            dataset = timesheet.toDataSet();
+            this.dataset = timesheet.toDataSet();
         }
 
+        /// <summary>
+        /// clear and redraw the timesheet
+        /// </summary>
         private void updateDgvTimesheet()
         {
             // The DataGridView preserves rows from old datasets when we update-- we need to remove them.
@@ -109,14 +129,17 @@ namespace timelord
                 row.CreateCells(dgvTimesheet);
 
                 row.Cells[0].Value = r["taskname"].ToString();
-                row.Cells[1].Value = r["timeinseconds"].ToString();
+                row.Cells[1].Value = TimeSpan.FromSeconds(double.Parse(r["timeinseconds"].ToString()));
                 row.Cells[2].Value = r["date"].ToString();
-                row.Cells[3].Value = r["paid"].ToString();
+                //row.Cells[3].Value = r["paid"].ToString();
 
                 dgvTimesheet.Rows.Add(row);
             }
         }
 
+        /// <summary>
+        /// Close a timesheet to open a new one
+        /// </summary>
         private void TimesheetClose()
         {
             timesheet.close();
@@ -125,10 +148,13 @@ namespace timelord
             txtTaskName.Enabled = false;
             lblTaskName.Enabled = false;
             dgvTimesheet.Enabled = false;
-
             // TODO: Clear DataGridView
+            dgvTimesheet.Rows.Clear();
         }
 
+        /// <summary>
+        /// Starts the task timer
+        /// </summary>
         private void btnTaskStart_Click(object sender, EventArgs e)
         {
             if (!timerState)
@@ -149,12 +175,20 @@ namespace timelord
             }
         }
 
+
+        /// <summary>
+        /// Adds one second to the task timer
+        /// </summary>
         private void Timer_Tick(object sender, EventArgs e)
         {
             time++;
             setTimerText(time);
         }
 
+
+        /// <summary>
+        /// Clears the current task if one exists
+        /// </summary>
         private void btnTaskClear_Click(object sender, EventArgs e)
         {
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to clear the task?", "Clear Time", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1))
@@ -173,14 +207,18 @@ namespace timelord
         {
             DataRow row = dataset.Tables[0].NewRow();
 
+            row.BeginEdit();
+
             row["taskname"] = txtTaskName.Text;
             row["timeinseconds"] = time;
             row["date"] = DateTime.Now.ToString();
             row["paid"] = 0;
+
+            row.EndEdit();
+
             dataset.Tables[0].Rows.Add(row);
 
-            dataset.Tables[0].AcceptChanges();
-
+            // this isnt working
             timesheet.Update(dataset);
 
             updateDgvTimesheet();
@@ -197,8 +235,11 @@ namespace timelord
         /// <param name="time">The time in seconds to set it to</param>
         private void setTimerText(int time)
         {
-            lblTaskDuration.Text = TimeSpan.FromSeconds(time).ToString(@"hh\:mm\:ss");
+            lblTaskDuration.Text = TimeSpan.FromSeconds(time).ToString();
         }
+
+        
+
     }
 
 }

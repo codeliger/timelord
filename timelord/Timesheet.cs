@@ -5,11 +5,15 @@ using System.Windows.Forms;
 
 namespace timelord
 {
+    /// <summary>
+    /// Manages the tasks database
+    /// </summary>
     class Timesheet
     {
         private string filePath;
         private SQLiteConnection sqlite;
         private SQLiteDataAdapter adapter;
+        private SQLiteCommandBuilder builder;
 
         /// <summary>
         /// Creates a timesheet object that determines if the filepath exists.
@@ -29,6 +33,8 @@ namespace timelord
                 createDatabase();
             }
 
+            prepareQueries();
+
         }
 
         /// <summary>
@@ -44,7 +50,7 @@ namespace timelord
         }
 
         /// <summary>
-        /// Creates the databse connection
+        /// Creates the database connection
         /// </summary>
         private void openDatabase()
         {
@@ -53,10 +59,10 @@ namespace timelord
             try
             {
                 sqlite.Open();
-
-            }catch(SQLiteException e)
+            }
+            catch(SQLiteException e)
             {
-                MessageBox.Show(e.Message);
+                MessageBox.Show(e.Message + e.StackTrace);
             }
         }
 
@@ -65,10 +71,26 @@ namespace timelord
         /// </summary>
         private void createSchema()
         {
-            string query = "CREATE TABLE timesheet (id int primary key not null, taskname text, timeinseconds int, date text, paid integer default 0)";
+            string query = "CREATE TABLE timesheet (id int primary key, taskname text, timeinseconds int, date text, paid integer default 0)";
+
             SQLiteCommand cmd = new SQLiteCommand(query, sqlite);
+
             cmd.ExecuteNonQuery();
 
+        }
+
+        /// <summary>
+        /// Prepares the queries used to manipulate the timesheet
+        /// </summary>
+        private void prepareQueries()
+        {
+            adapter = new SQLiteDataAdapter("select id,taskname,timeinseconds,date,paid from timesheet", sqlite);
+
+            builder = new SQLiteCommandBuilder(adapter);
+
+            adapter.UpdateCommand = builder.GetUpdateCommand();
+            adapter.DeleteCommand = builder.GetDeleteCommand();
+            adapter.InsertCommand = builder.GetInsertCommand();
         }
 
         /// <summary>
@@ -78,16 +100,24 @@ namespace timelord
         public DataSet toDataSet()
         {
             DataSet data = new DataSet();
-            adapter = new SQLiteDataAdapter("select id,taskname,timeinseconds,date,paid from timesheet", sqlite);
-            adapter.Fill(data);
+
+            this.adapter.Fill(data);
+
             return data;
         }
 
+        /// <summary>
+        /// Updates the dataset
+        /// </summary>
+        /// <param name="dataset"></param>
         public void Update(DataSet dataset)
         {
             this.adapter.Update(dataset);
         }
 
+        /// <summary>
+        /// Closes the database connection
+        /// </summary>
         public void close()
         {
             sqlite.Close();
