@@ -109,7 +109,7 @@ namespace timelord
             lblTaskName.Enabled = true;
             btnTaskSave.Enabled = false;
 
-            dataset = timesheet.toDataSet();
+            this.dataset = timesheet.toDataSet();
         }
 
         /// <summary>
@@ -149,6 +149,7 @@ namespace timelord
             lblTaskName.Enabled = false;
             dgvTimesheet.Enabled = false;
             // TODO: Clear DataGridView
+            dgvTimesheet.Rows.Clear();
         }
 
         /// <summary>
@@ -206,15 +207,18 @@ namespace timelord
         {
             DataRow row = dataset.Tables[0].NewRow();
 
+            row.BeginEdit();
+
             row["taskname"] = txtTaskName.Text;
             row["timeinseconds"] = time;
             row["date"] = DateTime.Now.ToString();
             row["paid"] = 0;
 
+            row.EndEdit();
+
             dataset.Tables[0].Rows.Add(row);
 
-            dataset.Tables[0].AcceptChanges();
-
+            // this isnt working
             timesheet.Update(dataset);
 
             updateDgvTimesheet();

@@ -33,6 +33,8 @@ namespace timelord
                 createDatabase();
             }
 
+            prepareQueries();
+
         }
 
         /// <summary>
@@ -57,19 +59,10 @@ namespace timelord
             try
             {
                 sqlite.Open();
-
-                adapter = new SQLiteDataAdapter("select id,taskname,timeinseconds,date,paid from timesheet", sqlite);
-
-                builder = new SQLiteCommandBuilder(adapter);
-
-                adapter.UpdateCommand = builder.GetUpdateCommand();
-                adapter.DeleteCommand = builder.GetDeleteCommand();
-                adapter.InsertCommand = builder.GetInsertCommand();
-
             }
             catch(SQLiteException e)
             {
-                MessageBox.Show(e.Message);
+                MessageBox.Show(e.Message + e.StackTrace);
             }
         }
 
@@ -78,12 +71,26 @@ namespace timelord
         /// </summary>
         private void createSchema()
         {
-            string query = "CREATE TABLE timesheet (id int primary key not null, taskname text, timeinseconds int, date text, paid integer default 0)";
+            string query = "CREATE TABLE timesheet (id int primary key, taskname text, timeinseconds int, date text, paid integer default 0)";
 
             SQLiteCommand cmd = new SQLiteCommand(query, sqlite);
 
             cmd.ExecuteNonQuery();
 
+        }
+
+        /// <summary>
+        /// Prepares the queries used to manipulate the timesheet
+        /// </summary>
+        private void prepareQueries()
+        {
+            adapter = new SQLiteDataAdapter("select id,taskname,timeinseconds,date,paid from timesheet", sqlite);
+
+            builder = new SQLiteCommandBuilder(adapter);
+
+            adapter.UpdateCommand = builder.GetUpdateCommand();
+            adapter.DeleteCommand = builder.GetDeleteCommand();
+            adapter.InsertCommand = builder.GetInsertCommand();
         }
 
         /// <summary>
