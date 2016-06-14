@@ -1,5 +1,5 @@
 # Timelord
-# Open-source time tracking and invoicing software written in C#
+# Open-source time tracking and invoicing software written in `C#`
 
 ## Purpose
 The purpose of this project is to create a simple and free time-tracking and invoicing software suite for windows for small time web developers who are not interested in paying monthly to simply track their hours. Most current time tracking solutions are either too complicated for large projects, or web-based and charge monthly fees to simply press start and stop and record seconds. This is unacceptable for independant freelancers or hobbyists who do not make enough to justify these costs.
