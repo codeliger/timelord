@@ -14,6 +14,12 @@ namespace timelord
         private SQLiteConnection sqlite;
         private SQLiteDataAdapter adapter;
         private SQLiteCommandBuilder builder;
+        
+        public DataSet dataset
+        {
+            get;
+            private set;
+        }
 
         /// <summary>
         /// Creates a timesheet object that determines if the filepath exists.
@@ -34,6 +40,8 @@ namespace timelord
             }
 
             prepareQueries();
+
+            createAndFillDataSet();
 
         }
 
@@ -59,6 +67,7 @@ namespace timelord
             try
             {
                 sqlite.Open();
+
             }
             catch(SQLiteException e)
             {
@@ -94,25 +103,12 @@ namespace timelord
         }
 
         /// <summary>
-        /// Fills and returns a dataset with the data from the database
-        /// </summary>
-        /// <returns>A new dataset with the same data as the database</returns>
-        public DataSet toDataSet()
-        {
-            DataSet data = new DataSet();
-
-            this.adapter.Fill(data);
-
-            return data;
-        }
-
-        /// <summary>
         /// Updates the dataset
         /// </summary>
         /// <param name="dataset"></param>
-        public void Update(DataSet dataset)
+        public void Update()
         {
-            this.adapter.Update(dataset);
+            this.adapter.Update(this.dataset);
         }
 
         /// <summary>
@@ -121,6 +117,12 @@ namespace timelord
         public void close()
         {
             sqlite.Close();
+        }
+
+        private void createAndFillDataSet()
+        {
+            this.dataset = new DataSet();
+            this.adapter.Fill(this.dataset);
         }
     }
 }
