@@ -117,8 +117,16 @@ namespace timelord
 
             foreach (DataRow r in dataset.Tables[0].Rows)
             {
+                // create context menu for each row
+                ContextMenuStrip taskContextMenu = new ContextMenuStrip();
+                taskContextMenu.Items.Add("Delete");
+                taskContextMenu.Items[0].Click += taskContextMenu_Click;
+
+
                 // Instead of a list, create a new row for the DataGridView.
                 DataGridViewRow row = new DataGridViewRow();
+
+                row.ContextMenuStrip = taskContextMenu;
 
                 // Populate the row with cells.
                 row.CreateCells(dgvTimesheet);
@@ -146,12 +154,40 @@ namespace timelord
                         break;
                 }
 
-                row.Cells[0].Style = row.Cells[1].Style = row.Cells[2].Style = style;
+                row.DefaultCellStyle = style;
 
                 dgvTimesheet.Rows.Add(row);
 
-
             }
+        }
+
+        private void taskContextMenu_Click(object sender, EventArgs e)
+        {
+            string message;
+            string title;
+
+            if (dgvTimesheet.SelectedRows.Count > 1)
+            {
+                message = "these tasks?";
+                title = "Delete Tasks";
+            }
+            else
+            {
+                message = "this task?";
+                title = "Delete Task";
+            }
+
+            if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete " + message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2))
+            {
+                foreach(DataGridViewRow row in dgvTimesheet.SelectedRows)
+                {
+                    // TODO: Figure out how to delete stuff in a parallel list of different object types
+                }
+
+                updateDgvTimesheet();
+            }
+
+            timesheet.Update();
         }
 
         /// <summary>
@@ -236,7 +272,6 @@ namespace timelord
 
             dataset.Tables[0].Rows.Add(row);
 
-            // this isnt working
             timesheet.Update();
 
             updateDgvTimesheet();
