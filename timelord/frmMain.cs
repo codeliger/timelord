@@ -161,6 +161,9 @@ namespace timelord
             }
         }
 
+        /// <summary>
+        /// A right click context menu event for each task in the dgv
+        /// </summary>
         private void taskContextMenu_Click(object sender, EventArgs e)
         {
             string message;
@@ -179,15 +182,16 @@ namespace timelord
 
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete " + message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2))
             {
-                foreach(DataGridViewRow row in dgvTimesheet.SelectedRows)
+                for(int i = 0; i < dgvTimesheet.SelectedRows.Count; i++)
                 {
-                    // TODO: Figure out how to delete stuff in a parallel list of different object types
+                    // TODO: This doesnt work beacause of different indexes of rows in SELECTED and DATATABLE
+                    this.dataset.Tables[0].Rows[i].Delete();
                 }
+
+                timesheet.Update();
 
                 updateDgvTimesheet();
             }
-
-            timesheet.Update();
         }
 
         /// <summary>
