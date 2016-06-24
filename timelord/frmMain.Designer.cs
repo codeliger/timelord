@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.msMain = new System.Windows.Forms.MenuStrip();
             this.mnuTimesheet = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuTimesheetOpen = new System.Windows.Forms.ToolStripMenuItem();
@@ -70,22 +71,22 @@
             // mnuTimesheetOpen
             // 
             this.mnuTimesheetOpen.Name = "mnuTimesheetOpen";
-            this.mnuTimesheetOpen.Size = new System.Drawing.Size(108, 22);
+            this.mnuTimesheetOpen.Size = new System.Drawing.Size(103, 22);
             this.mnuTimesheetOpen.Text = "Open";
             this.mnuTimesheetOpen.Click += new System.EventHandler(this.mnuTimesheetOpen_Click);
             // 
             // mnuTimesheetNew
             // 
             this.mnuTimesheetNew.Name = "mnuTimesheetNew";
-            this.mnuTimesheetNew.Size = new System.Drawing.Size(108, 22);
-            this.mnuTimesheetNew.Text = "Create";
+            this.mnuTimesheetNew.Size = new System.Drawing.Size(103, 22);
+            this.mnuTimesheetNew.Text = "New";
             this.mnuTimesheetNew.Click += new System.EventHandler(this.mnuTimesheetNew_Click);
             // 
             // mnuTimesheetClose
             // 
             this.mnuTimesheetClose.Enabled = false;
             this.mnuTimesheetClose.Name = "mnuTimesheetClose";
-            this.mnuTimesheetClose.Size = new System.Drawing.Size(108, 22);
+            this.mnuTimesheetClose.Size = new System.Drawing.Size(103, 22);
             this.mnuTimesheetClose.Text = "Close";
             this.mnuTimesheetClose.Click += new System.EventHandler(this.mnuTimesheetClose_Click);
             // 
@@ -108,12 +109,23 @@
             // 
             this.dgvTimesheet.AllowUserToAddRows = false;
             this.dgvTimesheet.AllowUserToDeleteRows = false;
+            this.dgvTimesheet.AllowUserToResizeColumns = false;
+            this.dgvTimesheet.AllowUserToResizeRows = false;
             this.dgvTimesheet.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvTimesheet.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvTimesheet.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnKeystroke;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvTimesheet.DefaultCellStyle = dataGridViewCellStyle1;
+            this.dgvTimesheet.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dgvTimesheet.Location = new System.Drawing.Point(0, 67);
             this.dgvTimesheet.Name = "dgvTimesheet";
             this.dgvTimesheet.RowHeadersVisible = false;
+            this.dgvTimesheet.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvTimesheet.Size = new System.Drawing.Size(923, 571);
             this.dgvTimesheet.TabIndex = 1;
             // 
