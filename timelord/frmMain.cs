@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace timelord
 {
@@ -67,7 +61,6 @@ namespace timelord
             if (result == DialogResult.OK)
             {
                 timesheet = new Timesheet(fileBrowser.FileName);
-                // Enable form controls
                 TimesheetOpen();
             }
             else if (result != DialogResult.Cancel)
@@ -109,7 +102,9 @@ namespace timelord
             lblTaskName.Enabled = true;
             btnTaskSave.Enabled = false;
 
-            this.dataset = timesheet.toDataSet();
+            this.dataset = timesheet.dataset;
+
+            updateDgvTimesheet();
         }
 
         /// <summary>
@@ -122,8 +117,16 @@ namespace timelord
 
             foreach (DataRow r in dataset.Tables[0].Rows)
             {
+                // create context menu for each row
+                ContextMenuStrip taskContextMenu = new ContextMenuStrip();
+                taskContextMenu.Items.Add("Delete");
+                taskContextMenu.Items[0].Click += taskContextMenu_Click;
+
+
                 // Instead of a list, create a new row for the DataGridView.
                 DataGridViewRow row = new DataGridViewRow();
+
+                row.ContextMenuStrip = taskContextMenu;
 
                 // Populate the row with cells.
                 row.CreateCells(dgvTimesheet);
@@ -131,9 +134,63 @@ namespace timelord
                 row.Cells[0].Value = r["taskname"].ToString();
                 row.Cells[1].Value = TimeSpan.FromSeconds(double.Parse(r["timeinseconds"].ToString()));
                 row.Cells[2].Value = r["date"].ToString();
+
                 //row.Cells[3].Value = r["paid"].ToString();
 
+                DataGridViewCellStyle style = new DataGridViewCellStyle();
+
+                // Changes color of cells based on if it has been invoiced or paid
+
+                switch ( int.Parse(r["paid"].ToString()) )
+                {
+                    case 0:
+                        style.BackColor = Color.FromArgb(255, 171, 171);
+                        break;
+                    case 1:
+                        style.BackColor = Color.FromArgb(255, 252, 171);
+                        break;
+                    case 2:
+                        style.BackColor = Color.FromArgb(171, 255, 172);
+                        break;
+                }
+
+                row.DefaultCellStyle = style;
+
                 dgvTimesheet.Rows.Add(row);
+
+            }
+        }
+
+        /// <summary>
+        /// A right click context menu event for each task in the dgv
+        /// </summary>
+        private void taskContextMenu_Click(object sender, EventArgs e)
+        {
+            string message;
+            string title;
+
+            if (dgvTimesheet.SelectedRows.Count > 1)
+            {
+                message = "these tasks?";
+                title = "Delete Tasks";
+            }
+            else
+            {
+                message = "this task?";
+                title = "Delete Task";
+            }
+
+            if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete " + message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2))
+            {
+                for(int i = 0; i < dgvTimesheet.SelectedRows.Count; i++)
+                {
+                    // TODO: This doesnt work beacause of different indexes of rows in SELECTED and DATATABLE
+                    this.dataset.Tables[0].Rows[i].Delete();
+                }
+
+                timesheet.Update();
+
+                updateDgvTimesheet();
             }
         }
 
@@ -197,6 +254,7 @@ namespace timelord
                 setTimerText(0);
                 btnTaskSave.Enabled = false;
                 btnTaskClear.Enabled = false;
+                txtTaskName.Text = string.Empty;
             }
         }
 
@@ -207,19 +265,18 @@ namespace timelord
         {
             DataRow row = dataset.Tables[0].NewRow();
 
-            row.BeginEdit();
+            //row.BeginEdit();
 
             row["taskname"] = txtTaskName.Text;
             row["timeinseconds"] = time;
             row["date"] = DateTime.Now.ToString();
             row["paid"] = 0;
 
-            row.EndEdit();
+            //row.EndEdit();
 
             dataset.Tables[0].Rows.Add(row);
 
-            // this isnt working
-            timesheet.Update(dataset);
+            timesheet.Update();
 
             updateDgvTimesheet();
 
@@ -227,6 +284,7 @@ namespace timelord
             time = 0;
             setTimerText(0);
             btnTaskSave.Enabled = false;
+            txtTaskName.Text = string.Empty;
         }
 
         /// <summary>
