@@ -182,11 +182,18 @@ namespace timelord
 
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete " + message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2))
             {
-                for(int i = 0; i < dgvTimesheet.SelectedRows.Count; i++)
+                //for(int i = 0; i < dgvTimesheet.SelectedRows.Count; i++)
+                //{
+                //    // TODO: This doesnt work beacause of different indexes of rows in SELECTED and DATATABLE
+                //    this.dataset.Tables[0].Rows[i].Delete();
+                //}
+
+                foreach(DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
                 {
-                    // TODO: This doesnt work beacause of different indexes of rows in SELECTED and DATATABLE
-                    this.dataset.Tables[0].Rows[i].Delete();
+                    this.dataset.Tables[0].Rows[selectedRow.Index].Delete();
                 }
+
+                this.dataset.Tables[0].AcceptChanges();
 
                 timesheet.Update();
 
