@@ -11,7 +11,6 @@ namespace timelord
     public partial class frmMain : Form
     {
         Timesheet timesheet;
-        DataSet dataset;
         Timer timer;
         int time;
         bool timerState = false;
@@ -102,8 +101,6 @@ namespace timelord
             lblTaskName.Enabled = true;
             btnTaskSave.Enabled = false;
 
-            this.dataset = timesheet.dataset;
-
             updateDgvTimesheet();
         }
 
@@ -112,15 +109,15 @@ namespace timelord
         /// </summary>
         private void updateDgvTimesheet()
         {
-            // The DataGridView preserves rows from old datasets when we update-- we need to remove them.
+            // Empty the datagrid view so we can get updated rows from the database
             dgvTimesheet.Rows.Clear();
 
-            foreach (DataRow r in dataset.Tables[0].Rows)
+            foreach (DataRow r in timesheet.dataset.Tables[0].Rows)
             {
                 // create context menu for each row
                 ContextMenuStrip taskContextMenu = new ContextMenuStrip();
                 taskContextMenu.Items.Add("Delete");
-                taskContextMenu.Items[0].Click += taskContextMenu_Click;
+                taskContextMenu.Items[0].Click += taskContextMenuDelete_Click;
 
 
                 // Instead of a list, create a new row for the DataGridView.
@@ -164,7 +161,7 @@ namespace timelord
         /// <summary>
         /// A right click context menu event for each task in the dgv
         /// </summary>
-        private void taskContextMenu_Click(object sender, EventArgs e)
+        private void taskContextMenuDelete_Click(object sender, EventArgs e)
         {
             string message;
             string title;
@@ -182,20 +179,13 @@ namespace timelord
 
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete " + message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2))
             {
-                //for(int i = 0; i < dgvTimesheet.SelectedRows.Count; i++)
-                //{
-                //    // TODO: This doesnt work beacause of different indexes of rows in SELECTED and DATATABLE
-                //    this.dataset.Tables[0].Rows[i].Delete();
-                //}
-
                 foreach(DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
                 {
-                    this.dataset.Tables[0].Rows[selectedRow.Index].Delete();
+                    timesheet.dataset.Tables[0].Rows[selectedRow.Index].Delete();
                 }
 
-                this.dataset.Tables[0].AcceptChanges();
 
-                timesheet.Update();
+                timesheet.synchronizeDataSetWithDatabase();
 
                 updateDgvTimesheet();
             }
@@ -270,7 +260,7 @@ namespace timelord
         /// </summary>
         private void btnTaskSave_Click(object sender, EventArgs e)
         {
-            DataRow row = dataset.Tables[0].NewRow();
+            DataRow row = timesheet.dataset.Tables[0].NewRow();
 
             //row.BeginEdit();
 
@@ -281,9 +271,9 @@ namespace timelord
 
             //row.EndEdit();
 
-            dataset.Tables[0].Rows.Add(row);
+            timesheet.dataset.Tables[0].Rows.Add(row);
 
-            timesheet.Update();
+            timesheet.synchronizeDataSetWithDatabase();
 
             updateDgvTimesheet();
 

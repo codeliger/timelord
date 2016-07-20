@@ -41,8 +41,9 @@ namespace timelord
 
             prepareQueries();
 
-            createAndFillDataSet();
+            this.dataset = new DataSet();
 
+            this.adapter.Fill(this.dataset);
         }
 
         /// <summary>
@@ -80,7 +81,7 @@ namespace timelord
         /// </summary>
         private void createSchema()
         {
-            string query = "CREATE TABLE timesheet (id int primary key, taskname text, timeinseconds int, date text, paid integer default 0)";
+            string query = "CREATE TABLE timesheet (id INTEGER PRIMARY KEY AUTOINCREMENT, taskname TEXT, timeinseconds INTEGER, date TEXT, paid INTEGER default 0)";
 
             SQLiteCommand cmd = new SQLiteCommand(query, sqlite);
 
@@ -103,12 +104,18 @@ namespace timelord
         }
 
         /// <summary>
-        /// Updates the dataset
+        /// Tells the data adapter to update the database to match the dataset
         /// </summary>
         /// <param name="dataset"></param>
-        public void Update()
+        public void synchronizeDataSetWithDatabase()
         {
             this.adapter.Update(this.dataset);
+
+            // Empty the dataset
+            this.dataset.Clear();
+
+            // Fill the dataset so it contains the same data as the database
+            this.adapter.Fill(this.dataset);
         }
 
         /// <summary>
@@ -117,12 +124,6 @@ namespace timelord
         public void close()
         {
             sqlite.Close();
-        }
-
-        private void createAndFillDataSet()
-        {
-            this.dataset = new DataSet();
-            this.adapter.Fill(this.dataset);
         }
     }
 }
