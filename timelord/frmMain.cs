@@ -2,7 +2,6 @@
 using System.Data;
 using System.Windows.Forms;
 using System.Drawing;
-
 namespace timelord
 {
     /// <summary>
@@ -39,6 +38,17 @@ namespace timelord
 
         }
 
+        /// <summary>
+        /// When the form is closed, close the database connection
+        /// </summary>
+        private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            timesheet.close();
+        }
+
+        /// <summary>
+        /// Select all of the text of the task name box when focused
+        /// </summary>
         private void TxtTaskName_GotFocus(object sender, EventArgs e)
         {
             txtTaskName.SelectAll();
@@ -60,6 +70,7 @@ namespace timelord
             if (result == DialogResult.OK)
             {
                 timesheet = new Timesheet(fileBrowser.FileName);
+                this.FormClosed += FrmMain_FormClosed;
                 TimesheetOpen();
             }
             else if (result != DialogResult.Cancel)
@@ -262,14 +273,10 @@ namespace timelord
         {
             DataRow row = timesheet.dataset.Tables[0].NewRow();
 
-            //row.BeginEdit();
-
             row["taskname"] = txtTaskName.Text;
             row["timeinseconds"] = time;
             row["date"] = DateTime.Now.ToString();
             row["paid"] = 0;
-
-            //row.EndEdit();
 
             timesheet.dataset.Tables[0].Rows.Add(row);
 
