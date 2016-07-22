@@ -2,6 +2,8 @@
 using System.Data;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Data.SQLite;
+
 namespace timelord
 {
     /// <summary>
@@ -21,6 +23,10 @@ namespace timelord
         {
             InitializeComponent();
 
+
+            this.MaximizeBox = false;
+            this.MinimizeBox = true;
+
             txtTaskName.GotFocus += TxtTaskName_GotFocus;
 
             // initialize a timer for counting seconds
@@ -34,7 +40,8 @@ namespace timelord
             dgvTimesheet.Columns.Add("taskname", "Task");
             dgvTimesheet.Columns.Add("timeinseconds", "Time");
             dgvTimesheet.Columns.Add("date", "Date");
-            //dgvTimesheet.Columns.Add("paid", "Paid");
+            dgvTimesheet.Columns.Add("paid", "Paid");
+            dgvTimesheet.Columns[3].Visible = false;
 
         }
 
@@ -127,9 +134,9 @@ namespace timelord
             {
                 // create context menu for each row
                 ContextMenuStrip taskContextMenu = new ContextMenuStrip();
+
                 taskContextMenu.Items.Add("Delete");
                 taskContextMenu.Items[0].Click += taskContextMenuDelete_Click;
-
 
                 // Instead of a list, create a new row for the DataGridView.
                 DataGridViewRow row = new DataGridViewRow();
@@ -142,8 +149,9 @@ namespace timelord
                 row.Cells[0].Value = r["taskname"].ToString();
                 row.Cells[1].Value = TimeSpan.FromSeconds(double.Parse(r["timeinseconds"].ToString()));
                 row.Cells[2].Value = r["date"].ToString();
+                row.Cells[3].Value = r["paid"].ToString();
 
-                //row.Cells[3].Value = r["paid"].ToString();
+                dgvTimesheet.CellClick += DgvTimesheet_CellClick;                                
 
                 DataGridViewCellStyle style = new DataGridViewCellStyle();
 
@@ -166,6 +174,19 @@ namespace timelord
 
                 dgvTimesheet.Rows.Add(row);
 
+            }
+
+            dgvTimesheet.ClearSelection();
+        }
+
+        private void DgvTimesheet_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if(dgvTimesheet.SelectedRows.Count > 0)
+            {
+                mnuInvoice.Enabled = true;
+            }else
+            {
+                mnuInvoice.Enabled = false;
             }
         }
 
@@ -213,7 +234,6 @@ namespace timelord
             txtTaskName.Enabled = false;
             lblTaskName.Enabled = false;
             dgvTimesheet.Enabled = false;
-            // TODO: Clear DataGridView
             dgvTimesheet.Rows.Clear();
         }
 

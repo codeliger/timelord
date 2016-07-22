@@ -34,9 +34,12 @@ namespace timelord
             if (File.Exists(filePath))
             {
                 openDatabase();
+
             }else
             {
                 createDatabase();
+
+                createSchema();
             }
 
             prepareQueries();
@@ -54,8 +57,6 @@ namespace timelord
             SQLiteConnection.CreateFile(filePath);
 
             openDatabase();
-
-            createSchema();
         }
 
         /// <summary>
@@ -68,7 +69,6 @@ namespace timelord
             try
             {
                 sqlite.Open();
-
             }
             catch(SQLiteException e)
             {
