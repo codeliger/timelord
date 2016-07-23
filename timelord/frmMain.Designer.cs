@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.msMain = new System.Windows.Forms.MenuStrip();
             this.mnuTimesheet = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuTimesheetOpen = new System.Windows.Forms.ToolStripMenuItem();
@@ -206,8 +207,10 @@
             this.Controls.Add(this.dgvTimesheet);
             this.Controls.Add(this.msMain);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.msMain;
             this.Name = "frmMain";
+            this.ShowIcon = false;
             this.Text = "Timelord";
             this.msMain.ResumeLayout(false);
             this.msMain.PerformLayout();

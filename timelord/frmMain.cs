@@ -2,7 +2,6 @@
 using System.Data;
 using System.Windows.Forms;
 using System.Drawing;
-using System.Data.SQLite;
 
 namespace timelord
 {
@@ -74,7 +73,7 @@ namespace timelord
 
             DialogResult result = fileBrowser.ShowDialog();
 
-            if (result == DialogResult.OK)
+            if (result.Equals(DialogResult.OK) && isSQLiteDatabase(fileBrowser.FileName))
             {
                 timesheet = new Timesheet(fileBrowser.FileName);
                 this.FormClosed += FrmMain_FormClosed;
@@ -318,6 +317,27 @@ namespace timelord
         private void setTimerText(int time)
         {
             lblTaskDuration.Text = TimeSpan.FromSeconds(time).ToString();
+        }
+
+
+        public static bool isSQLiteDatabase(string pathToFile)
+        {
+            bool result = false;
+
+            System.IO.FileStream stream = new System.IO.FileStream(pathToFile, System.IO.FileMode.Open);
+
+            byte[] header = new byte[16];
+
+            for(int i = 0; i < 16; i++)
+            {
+                header[i] = (byte) stream.ReadByte();
+            }
+
+            result = System.Text.Encoding.UTF8.GetString(header).Contains("SQLite format 3");
+
+            stream.Close();
+
+            return result;
         }
 
         
