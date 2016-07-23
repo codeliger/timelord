@@ -2,6 +2,7 @@
 using System.Data;
 using System.Windows.Forms;
 using System.Drawing;
+using System.IO;
 
 namespace timelord
 {
@@ -22,11 +23,12 @@ namespace timelord
         {
             InitializeComponent();
 
-
             this.MaximizeBox = false;
             this.MinimizeBox = true;
 
             txtTaskName.GotFocus += TxtTaskName_GotFocus;
+            dgvTimesheet.SelectionChanged += DgvTimesheet_SelectionChanged;
+            dgvTimesheet.CellClick += DgvTimesheet_CellClick;
 
             // initialize a timer for counting seconds
             timer = new Timer();
@@ -42,6 +44,37 @@ namespace timelord
             dgvTimesheet.Columns.Add("paid", "Paid");
             dgvTimesheet.Columns[3].Visible = false;
 
+        }
+
+        private void DgvTimesheet_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            //if (dgvTimesheet.SelectedRows.Count > 0 && dgvTimesheet.Rows[e.RowIndex].Selected)
+            //{
+            //    dgvTimesheet.Rows[e.RowIndex].Selected = false;
+            //}
+        }
+
+        private void DgvTimesheet_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dgvTimesheet.SelectedRows.Count > 0)
+            {
+                mnuInvoice.Enabled = true;
+            }
+            else
+            {
+                mnuInvoice.Enabled = false;
+            }
+
+            foreach (DataGridViewRow row in dgvTimesheet.Rows)
+            {
+                if (row.Selected)
+                {
+                    row.DefaultCellStyle.Font = new Font(dgvTimesheet.Font, FontStyle.Bold);
+                }else
+                {
+                    row.DefaultCellStyle.Font = new Font(dgvTimesheet.Font, FontStyle.Regular);
+                }
+            }
         }
 
         /// <summary>
@@ -148,45 +181,25 @@ namespace timelord
                 row.Cells[0].Value = r["taskname"].ToString();
                 row.Cells[1].Value = TimeSpan.FromSeconds(double.Parse(r["timeinseconds"].ToString()));
                 row.Cells[2].Value = r["date"].ToString();
-                row.Cells[3].Value = r["paid"].ToString();
+                row.Cells[3].Value = r["paid"].ToString();                           
 
-                dgvTimesheet.CellClick += DgvTimesheet_CellClick;                                
-
-                DataGridViewCellStyle style = new DataGridViewCellStyle();
+                DataGridViewCellStyle defaultStyle = new DataGridViewCellStyle();
 
                 // Changes color of cells based on if it has been invoiced or paid
 
-                switch ( int.Parse(r["paid"].ToString()) )
-                {
-                    case 0:
-                        style.BackColor = Color.FromArgb(255, 171, 171);
-                        break;
-                    case 1:
-                        style.BackColor = Color.FromArgb(255, 252, 171);
-                        break;
-                    case 2:
-                        style.BackColor = Color.FromArgb(171, 255, 172);
-                        break;
-                }
+                defaultStyle.ForeColor = Color.Black;
+                defaultStyle.SelectionForeColor = Color.Black;
 
-                row.DefaultCellStyle = style;
+                defaultStyle.BackColor = getTaskStatus(int.Parse(r["paid"].ToString()));
+                defaultStyle.SelectionBackColor = defaultStyle.BackColor;
+
+                row.DefaultCellStyle = defaultStyle;
 
                 dgvTimesheet.Rows.Add(row);
 
             }
 
             dgvTimesheet.ClearSelection();
-        }
-
-        private void DgvTimesheet_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if(dgvTimesheet.SelectedRows.Count > 0)
-            {
-                mnuInvoice.Enabled = true;
-            }else
-            {
-                mnuInvoice.Enabled = false;
-            }
         }
 
         /// <summary>
@@ -214,7 +227,6 @@ namespace timelord
                 {
                     timesheet.dataset.Tables[0].Rows[selectedRow.Index].Delete();
                 }
-
 
                 timesheet.synchronizeDataSetWithDatabase();
 
@@ -319,25 +331,56 @@ namespace timelord
             lblTaskDuration.Text = TimeSpan.FromSeconds(time).ToString();
         }
 
-
+        /// <summary>
+        /// Determines if the file path is a Format 3 SQLite Database
+        /// </summary>
+        /// <param name="pathToFile">A string leading to a file</param>
+        /// <returns></returns>
         public static bool isSQLiteDatabase(string pathToFile)
         {
             bool result = false;
 
-            System.IO.FileStream stream = new System.IO.FileStream(pathToFile, System.IO.FileMode.Open);
+            if (File.Exists(pathToFile)) { 
 
-            byte[] header = new byte[16];
+                FileStream stream = new FileStream(pathToFile, FileMode.Open);
 
-            for(int i = 0; i < 16; i++)
-            {
-                header[i] = (byte) stream.ReadByte();
+                byte[] header = new byte[16];
+
+                for(int i = 0; i < 16; i++)
+                {
+                    header[i] = (byte) stream.ReadByte();
+                }
+
+                result = System.Text.Encoding.UTF8.GetString(header).Contains("SQLite format 3");
+
+                stream.Close();
+
             }
 
-            result = System.Text.Encoding.UTF8.GetString(header).Contains("SQLite format 3");
-
-            stream.Close();
-
             return result;
+        }
+
+        public Color getTaskStatus(int status)
+        {
+            Color backgroundColor = new Color();
+
+            switch (status)
+            {
+                case 0:
+                    backgroundColor = Color.FromArgb(255, 171, 171); // Red
+                    break;
+                case 1:
+                    backgroundColor = Color.FromArgb(255, 252, 171); // Green
+                    break;
+                case 2:
+                    backgroundColor = Color.FromArgb(171, 255, 172); // Blue
+                    break;
+                default:
+                    backgroundColor = dgvTimesheet.DefaultCellStyle.BackColor;
+                    break;
+            }
+
+            return backgroundColor;
         }
 
         
