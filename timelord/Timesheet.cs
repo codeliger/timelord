@@ -66,14 +66,13 @@ namespace timelord
         private void openDatabase()
         {
             sqlite = new SQLiteConnection("Data Source=" + this.filePath + ";Version=3;");
-
             try
             {
                 sqlite.Open();
             }
             catch(SQLiteException e)
             {
-                MessageBox.Show(e.Message + e.StackTrace);
+                MessageBox.Show(e.Message);
             }
         }
 
@@ -108,15 +107,15 @@ namespace timelord
         /// Tells the data adapter to update the database to match the dataset
         /// </summary>
         /// <param name="dataset"></param>
-        public void synchronizeDataSetWithDatabase()
+        public void synchronizeDatasetWithDatabase()
         {
-            this.adapter.Update(this.dataset);
+            adapter.Update(this.dataset);
 
             // Empty the dataset
-            this.dataset.Clear();
+            dataset.Clear();
 
             // Fill the dataset so it contains the same data as the database
-            this.adapter.Fill(this.dataset);
+            adapter.Fill(this.dataset);
         }
 
         /// <summary>
@@ -125,6 +124,8 @@ namespace timelord
         public void close()
         {
             sqlite.Close();
+            sqlite.Dispose();
+            GC.Collect();
         }
     }
 }

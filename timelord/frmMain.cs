@@ -228,7 +228,7 @@ namespace timelord
                     timesheet.dataset.Tables[0].Rows[selectedRow.Index].Delete();
                 }
 
-                timesheet.synchronizeDataSetWithDatabase();
+                timesheet.synchronizeDatasetWithDatabase();
 
                 updateDgvTimesheet();
             }
@@ -311,7 +311,7 @@ namespace timelord
 
             timesheet.dataset.Tables[0].Rows.Add(row);
 
-            timesheet.synchronizeDataSetWithDatabase();
+            timesheet.synchronizeDatasetWithDatabase();
 
             updateDgvTimesheet();
 
@@ -340,20 +340,22 @@ namespace timelord
         {
             bool result = false;
 
-            if (File.Exists(pathToFile)) { 
+            if (File.Exists(pathToFile)) {
 
-                FileStream stream = new FileStream(pathToFile, FileMode.Open);
+ 
 
-                byte[] header = new byte[16];
-
-                for(int i = 0; i < 16; i++)
+                using (FileStream stream = new FileStream(pathToFile, FileMode.Open))
                 {
-                    header[i] = (byte) stream.ReadByte();
+
+                    byte[] header = new byte[16];
+
+                    for (int i = 0; i < 16; i++)
+                    {
+                        header[i] = (byte)stream.ReadByte();
+                    }
+
+                    result = System.Text.Encoding.UTF8.GetString(header).Contains("SQLite format 3");
                 }
-
-                result = System.Text.Encoding.UTF8.GetString(header).Contains("SQLite format 3");
-
-                stream.Close();
 
             }
 
