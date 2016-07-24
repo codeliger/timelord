@@ -82,7 +82,7 @@ namespace timelord
         /// </summary>
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
-            timesheet.close();
+            TimesheetClose();
         }
 
         /// <summary>
@@ -108,6 +108,7 @@ namespace timelord
 
             if (result.Equals(DialogResult.OK) && isSQLiteDatabase(fileBrowser.FileName))
             {
+                TimesheetClose();
                 timesheet = new Timesheet(fileBrowser.FileName);
                 this.FormClosed += FrmMain_FormClosed;
                 TimesheetOpen();
@@ -239,7 +240,12 @@ namespace timelord
         /// </summary>
         private void TimesheetClose()
         {
-            timesheet.close();
+            if (timesheet != null)
+            {
+                timesheet.close();
+                timesheet = null;
+            }
+
             mnuTimesheetClose.Enabled = false;
             btnTaskStart.Enabled = false;
             txtTaskName.Enabled = false;
@@ -342,11 +348,8 @@ namespace timelord
 
             if (File.Exists(pathToFile)) {
 
- 
-
-                using (FileStream stream = new FileStream(pathToFile, FileMode.Open))
+                using (FileStream stream = new FileStream(pathToFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-
                     byte[] header = new byte[16];
 
                     for (int i = 0; i < 16; i++)
@@ -355,6 +358,8 @@ namespace timelord
                     }
 
                     result = System.Text.Encoding.UTF8.GetString(header).Contains("SQLite format 3");
+
+                    stream.Close();
                 }
 
             }
