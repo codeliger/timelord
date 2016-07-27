@@ -124,8 +124,6 @@ namespace timelord
         public void close()
         {
             sqlite.Close();
-            sqlite.Dispose();
-            GC.Collect();
         }
     }
 }

@@ -46,6 +46,10 @@ namespace timelord
 
         }
 
+
+        /// <summary>
+        /// Deselect the row when a selected row is clicked on
+        /// </summary>
         private void DgvTimesheet_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             //if (dgvTimesheet.SelectedRows.Count > 0 && dgvTimesheet.Rows[e.RowIndex].Selected)
@@ -54,6 +58,9 @@ namespace timelord
             //}
         }
 
+        /// <summary>
+        /// Toggle the font weight of the selected row
+        /// </summary>
         private void DgvTimesheet_SelectionChanged(object sender, EventArgs e)
         {
             if (dgvTimesheet.SelectedRows.Count > 0)
@@ -144,8 +151,12 @@ namespace timelord
             TimesheetClose();
         }
 
+        /// <summary>
+        /// Open the timesheet and enable the form elements
+        /// </summary>
         private void TimesheetOpen()
         {
+            dgvTimesheet.Enabled = true;
             mnuTimesheetClose.Enabled = true;
             btnTaskStart.Enabled = true;
             txtTaskName.Enabled = true;
@@ -153,6 +164,25 @@ namespace timelord
             btnTaskSave.Enabled = false;
 
             updateDgvTimesheet();
+        }
+
+        /// <summary>
+        /// Close a timesheet to open a new one
+        /// </summary>
+        private void TimesheetClose()
+        {
+            if (timesheet != null)
+            {
+                timesheet.close();
+                timesheet = null;
+            }
+
+            mnuTimesheetClose.Enabled = false;
+            btnTaskStart.Enabled = false;
+            txtTaskName.Enabled = false;
+            lblTaskName.Enabled = false;
+            dgvTimesheet.Enabled = false;
+            dgvTimesheet.Rows.Clear();
         }
 
         /// <summary>
@@ -233,25 +263,6 @@ namespace timelord
 
                 updateDgvTimesheet();
             }
-        }
-
-        /// <summary>
-        /// Close a timesheet to open a new one
-        /// </summary>
-        private void TimesheetClose()
-        {
-            if (timesheet != null)
-            {
-                timesheet.close();
-                timesheet = null;
-            }
-
-            mnuTimesheetClose.Enabled = false;
-            btnTaskStart.Enabled = false;
-            txtTaskName.Enabled = false;
-            lblTaskName.Enabled = false;
-            dgvTimesheet.Enabled = false;
-            dgvTimesheet.Rows.Clear();
         }
 
         /// <summary>
@@ -367,6 +378,12 @@ namespace timelord
             return result;
         }
 
+
+        /// <summary>
+        /// Get the color the task should be set to
+        /// </summary>
+        /// <param name="status">The status code 0 for unbilled, 1 for billed, 2 for paid</param>
+        /// <returns>The color associated with the status</returns>
         public Color getTaskStatus(int status)
         {
             Color backgroundColor = new Color();
