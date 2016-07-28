@@ -3,7 +3,6 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Windows.Forms;
-
 namespace timelord
 {
     /// <summary>

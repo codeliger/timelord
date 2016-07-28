@@ -3,7 +3,6 @@ using System.Data;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
-
 namespace timelord
 {
     /// <summary>
@@ -46,6 +45,7 @@ namespace timelord
 
         }
 
+        #region Events
 
         /// <summary>
         /// Deselect the row when a selected row is clicked on
@@ -122,7 +122,7 @@ namespace timelord
             }
             else if (result != DialogResult.Cancel)
             {
-                MessageBox.Show("Could not open the file specified: " + result.ToString());
+                MessageBox.Show("The file you tried to open was not a SQLite Database.");
             }
         }
 
@@ -151,87 +151,6 @@ namespace timelord
             TimesheetClose();
         }
 
-        /// <summary>
-        /// Open the timesheet and enable the form elements
-        /// </summary>
-        private void TimesheetOpen()
-        {
-            dgvTimesheet.Enabled = true;
-            mnuTimesheetClose.Enabled = true;
-            btnTaskStart.Enabled = true;
-            txtTaskName.Enabled = true;
-            lblTaskName.Enabled = true;
-            btnTaskSave.Enabled = false;
-
-            updateDgvTimesheet();
-        }
-
-        /// <summary>
-        /// Close a timesheet to open a new one
-        /// </summary>
-        private void TimesheetClose()
-        {
-            if (timesheet != null)
-            {
-                timesheet.close();
-                timesheet = null;
-            }
-
-            mnuTimesheetClose.Enabled = false;
-            btnTaskStart.Enabled = false;
-            txtTaskName.Enabled = false;
-            lblTaskName.Enabled = false;
-            dgvTimesheet.Enabled = false;
-            dgvTimesheet.Rows.Clear();
-        }
-
-        /// <summary>
-        /// clear and redraw the timesheet
-        /// </summary>
-        private void updateDgvTimesheet()
-        {
-            // Empty the datagrid view so we can get updated rows from the database
-            dgvTimesheet.Rows.Clear();
-
-            foreach (DataRow r in timesheet.dataset.Tables[0].Rows)
-            {
-                // create context menu for each row
-                ContextMenuStrip taskContextMenu = new ContextMenuStrip();
-
-                taskContextMenu.Items.Add("Delete");
-                taskContextMenu.Items[0].Click += taskContextMenuDelete_Click;
-
-                // Instead of a list, create a new row for the DataGridView.
-                DataGridViewRow row = new DataGridViewRow();
-
-                row.ContextMenuStrip = taskContextMenu;
-
-                // Populate the row with cells.
-                row.CreateCells(dgvTimesheet);
-
-                row.Cells[0].Value = r["taskname"].ToString();
-                row.Cells[1].Value = TimeSpan.FromSeconds(double.Parse(r["timeinseconds"].ToString()));
-                row.Cells[2].Value = r["date"].ToString();
-                row.Cells[3].Value = r["paid"].ToString();                           
-
-                DataGridViewCellStyle defaultStyle = new DataGridViewCellStyle();
-
-                // Changes color of cells based on if it has been invoiced or paid
-
-                defaultStyle.ForeColor = Color.Black;
-                defaultStyle.SelectionForeColor = Color.Black;
-
-                defaultStyle.BackColor = getTaskStatus(int.Parse(r["paid"].ToString()));
-                defaultStyle.SelectionBackColor = defaultStyle.BackColor;
-
-                row.DefaultCellStyle = defaultStyle;
-
-                dgvTimesheet.Rows.Add(row);
-
-            }
-
-            dgvTimesheet.ClearSelection();
-        }
 
         /// <summary>
         /// A right click context menu event for each task in the dgv
@@ -254,7 +173,7 @@ namespace timelord
 
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete " + message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2))
             {
-                foreach(DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
+                foreach (DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
                 {
                     timesheet.dataset.Tables[0].Rows[selectedRow.Index].Delete();
                 }
@@ -339,6 +258,92 @@ namespace timelord
             txtTaskName.Text = string.Empty;
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Open the timesheet and enable the form elements
+        /// </summary>
+        private void TimesheetOpen()
+        {
+            dgvTimesheet.Enabled = true;
+            mnuTimesheetClose.Enabled = true;
+            btnTaskStart.Enabled = true;
+            txtTaskName.Enabled = true;
+            lblTaskName.Enabled = true;
+            btnTaskSave.Enabled = false;
+            updateDgvTimesheet();
+        }
+
+        /// <summary>
+        /// Close a timesheet to open a new one
+        /// </summary>
+        private void TimesheetClose()
+        {
+            if (timesheet != null)
+            {
+                timesheet.close();
+                timesheet = null;
+            }
+
+            mnuTimesheetClose.Enabled = false;
+            btnTaskStart.Enabled = false;
+            txtTaskName.Enabled = false;
+            lblTaskName.Enabled = false;
+            dgvTimesheet.Enabled = false;
+            dgvTimesheet.Rows.Clear();
+        }
+
+        /// <summary>
+        /// clear and redraw the timesheet
+        /// </summary>
+        private void updateDgvTimesheet()
+        {
+            // Empty the datagrid view so we can get updated rows from the database
+            dgvTimesheet.Rows.Clear();
+
+            foreach (DataRow r in timesheet.dataset.Tables[0].Rows)
+            {
+                // create context menu for each row
+                ContextMenuStrip taskContextMenu = new ContextMenuStrip();
+
+                taskContextMenu.Items.Add("Delete");
+                taskContextMenu.Items[0].Click += taskContextMenuDelete_Click;
+
+                // Instead of a list, create a new row for the DataGridView.
+                DataGridViewRow row = new DataGridViewRow();
+
+                row.ContextMenuStrip = taskContextMenu;
+
+                // Populate the row with cells.
+                row.CreateCells(dgvTimesheet);
+
+                row.Cells[0].Value = r["taskname"].ToString();
+                row.Cells[1].Value = TimeSpan.FromSeconds(double.Parse(r["timeinseconds"].ToString()));
+                row.Cells[2].Value = r["date"].ToString();
+                row.Cells[3].Value = r["paid"].ToString();                           
+
+                DataGridViewCellStyle defaultStyle = new DataGridViewCellStyle();
+
+                // Changes color of cells based on if it has been invoiced or paid
+
+                defaultStyle.ForeColor = Color.Black;
+                defaultStyle.SelectionForeColor = Color.Black;
+
+                defaultStyle.BackColor = getTaskStatus(int.Parse(r["paid"].ToString()));
+                defaultStyle.SelectionBackColor = defaultStyle.BackColor;
+
+                row.DefaultCellStyle = defaultStyle;
+
+                dgvTimesheet.Rows.Add(row);
+
+            }
+
+            dgvTimesheet.ClearSelection();
+        }
+
+
         /// <summary>
         /// Set the text of the timer
         /// </summary>
@@ -407,8 +412,6 @@ namespace timelord
             return backgroundColor;
         }
 
-        
-
+        #endregion
     }
-
 }
