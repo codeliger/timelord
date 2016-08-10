@@ -27,7 +27,7 @@ namespace timelord
 
             txtTaskName.GotFocus += TxtTaskName_GotFocus;
             dgvTimesheet.SelectionChanged += DgvTimesheet_SelectionChanged;
-            dgvTimesheet.CellClick += DgvTimesheet_CellClick;
+            dgvTimesheet.CellMouseDown += DgvTimesheet_CellMouseDown;
 
             // initialize a timer for counting seconds
             timer = new Timer();
@@ -45,18 +45,21 @@ namespace timelord
 
         }
 
-        #region Events
-
         /// <summary>
-        /// Deselect the row when a selected row is clicked on
+        /// Selects the cell you right click on
         /// </summary>
-        private void DgvTimesheet_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void DgvTimesheet_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
-            //if (dgvTimesheet.SelectedRows.Count > 0 && dgvTimesheet.Rows[e.RowIndex].Selected)
-            //{
-            //    dgvTimesheet.Rows[e.RowIndex].Selected = false;
-            //}
+            if(e.RowIndex != -1)
+            {
+                if(e.Button == MouseButtons.Right)
+                {
+                    dgvTimesheet.Rows[e.RowIndex].Selected = true;
+                }
+            }
         }
+
+        #region Events
 
         /// <summary>
         /// Toggle the font weight of the selected row
@@ -180,7 +183,7 @@ namespace timelord
 
                 timesheet.synchronizeDatasetWithDatabase();
 
-                updateDgvTimesheet();
+                fillDataGridView();
             }
         }
 
@@ -249,7 +252,7 @@ namespace timelord
 
             timesheet.synchronizeDatasetWithDatabase();
 
-            updateDgvTimesheet();
+            fillDataGridView();
 
             // clear
             time = 0;
@@ -273,7 +276,7 @@ namespace timelord
             txtTaskName.Enabled = true;
             lblTaskName.Enabled = true;
             btnTaskSave.Enabled = false;
-            updateDgvTimesheet();
+            fillDataGridView();
         }
 
         /// <summary>
@@ -298,7 +301,7 @@ namespace timelord
         /// <summary>
         /// clear and redraw the timesheet
         /// </summary>
-        private void updateDgvTimesheet()
+        private void fillDataGridView()
         {
             // Empty the datagrid view so we can get updated rows from the database
             dgvTimesheet.Rows.Clear();
@@ -311,9 +314,31 @@ namespace timelord
                 taskContextMenu.Items.Add("Delete");
                 taskContextMenu.Items[0].Click += taskContextMenuDelete_Click;
 
+                // conditional context menu entries
+                switch ( int.Parse( r["paid"].ToString() ) )
+                {
+                    case 0:
+                        taskContextMenu.Items.Add("Mark as Invoiced");
+                        taskContextMenu.Items[taskContextMenu.Items.Count - 1].Click += markAsInvoiced;
+                        taskContextMenu.Items.Add("Mark as Paid");
+                        taskContextMenu.Items[taskContextMenu.Items.Count - 1].Click += markAsPaid;
+                        break;
+                    case 1:
+                        taskContextMenu.Items.Add("Mark as Not Invoiced");
+                        taskContextMenu.Items[taskContextMenu.Items.Count - 1].Click += markAsNotInvoiced;
+                        taskContextMenu.Items.Add("Mark as Paid");
+                        taskContextMenu.Items[taskContextMenu.Items.Count - 1].Click += markAsPaid;
+                        break;
+                    case 2:
+                        taskContextMenu.Items.Add("Mark as Not Invoiced");
+                        taskContextMenu.Items[taskContextMenu.Items.Count - 1].Click += markAsNotInvoiced;
+                        taskContextMenu.Items.Add("Mark as Invoiced");
+                        taskContextMenu.Items[taskContextMenu.Items.Count - 1].Click += markAsInvoiced;
+                        break;
+                }
+
                 // Instead of a list, create a new row for the DataGridView.
                 DataGridViewRow row = new DataGridViewRow();
-
                 row.ContextMenuStrip = taskContextMenu;
 
                 // Populate the row with cells.
@@ -341,6 +366,53 @@ namespace timelord
             }
 
             dgvTimesheet.ClearSelection();
+        }
+
+
+        /// <summary>
+        /// Changes the item to uninvoiced in the database
+        /// </summary>
+        private void markAsNotInvoiced(object sender, EventArgs e)
+        {
+            foreach(DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
+            {
+                timesheet.dataset.Tables[0].Rows[selectedRow.Index]["paid"] = 0;
+            }
+
+            timesheet.synchronizeDatasetWithDatabase();
+
+            fillDataGridView();
+        }
+
+
+        /// <summary>
+        /// Changes the item to invoiced in the database
+        /// </summary>
+        private void markAsInvoiced(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
+            {
+                timesheet.dataset.Tables[0].Rows[selectedRow.Index]["paid"] = 1;
+            }
+
+            timesheet.synchronizeDatasetWithDatabase();
+
+            fillDataGridView();
+        }
+
+        /// <summary>
+        /// Changes the item to paid in the database
+        /// </summary>
+        private void markAsPaid(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
+            {
+                timesheet.dataset.Tables[0].Rows[selectedRow.Index]["paid"] = 2;
+            }
+
+            timesheet.synchronizeDatasetWithDatabase();
+
+            fillDataGridView();
         }
 
 
