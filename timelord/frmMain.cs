@@ -160,21 +160,10 @@ namespace timelord
         /// </summary>
         private void taskContextMenuDelete_Click(object sender, EventArgs e)
         {
-            string message;
-            string title;
+            string message = string.Format("Are you sure you want to delete {0} task(s)?", dgvTimesheet.SelectedRows.Count);
+            string title = string.Format("Delete {0} task(s)?", dgvTimesheet.SelectedRows.Count);
 
-            if (dgvTimesheet.SelectedRows.Count > 1)
-            {
-                message = "these tasks?";
-                title = "Delete Tasks";
-            }
-            else
-            {
-                message = "this task?";
-                title = "Delete Task";
-            }
-
-            if (DialogResult.Yes == MessageBox.Show("Are you sure you want to delete " + message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2))
+            if (DialogResult.Yes == MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2))
             {
                 foreach (DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
                 {
