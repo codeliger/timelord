@@ -38,11 +38,51 @@ namespace timelord
             lblTaskDuration.Text = TimeSpan.FromSeconds(0).ToString(@"hh\:mm\:ss");
 
             dgvTimesheet.Columns.Add("taskname", "Task");
+            dgvTimesheet.Columns["taskname"].ReadOnly = false;
+
             dgvTimesheet.Columns.Add("timeinseconds", "Time");
+            dgvTimesheet.Columns["timeinseconds"].ReadOnly = false;
+
             dgvTimesheet.Columns.Add("date", "Date");
+            dgvTimesheet.Columns["date"].ReadOnly = true;
+
             dgvTimesheet.Columns.Add("paid", "Paid");
             dgvTimesheet.Columns[3].Visible = false;
 
+            dgvTimesheet.CellDoubleClick += DgvTimesheet_CellDoubleClick;
+
+        }
+
+        private void DgvTimesheet_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+            if (e.RowIndex > -1 && e.ColumnIndex > -1)
+            {
+                string newValue;
+                EditMaster editor = null;
+
+                switch (e.ColumnIndex)
+                {
+                    case 0:
+                        editor = new EditTitle(timesheet.dataset.Tables[0].Rows[e.RowIndex][e.ColumnIndex + 1].ToString());
+                        break;
+                    case 1:
+                        editor = new EditTime(timesheet.dataset.Tables[0].Rows[e.RowIndex][e.ColumnIndex + 1].ToString());
+                        break;
+                }
+
+                if (editor != null && editor.ShowDialog() == DialogResult.OK)
+                {
+                    newValue = editor.getValue();
+
+                    timesheet.dataset.Tables[0].Rows[e.RowIndex][e.ColumnIndex + 1] = newValue;
+
+                    timesheet.synchronizeDatasetWithDatabase();
+
+                    fillDataGridView();
+                }
+
+            }
         }
 
         /// <summary>
