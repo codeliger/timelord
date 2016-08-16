@@ -80,7 +80,7 @@ namespace timelord
         /// </summary>
         private void createSchema()
         {
-            string query = "CREATE TABLE timesheet (id INTEGER PRIMARY KEY AUTOINCREMENT, taskname TEXT, timeinseconds INTEGER, date TEXT, paid INTEGER default 0)";
+            string query = "CREATE TABLE task (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, begindate TEXT, enddate TEXT, status INTEGER default 0)";
 
             SQLiteCommand cmd = new SQLiteCommand(query, sqlite);
 
@@ -93,7 +93,7 @@ namespace timelord
         /// </summary>
         private void prepareQueries()
         {
-            adapter = new SQLiteDataAdapter("select id,taskname,timeinseconds,date,paid from timesheet", sqlite);
+            adapter = new SQLiteDataAdapter("select id,name,begindate,enddate,status from task", sqlite);
 
             builder = new SQLiteCommandBuilder(adapter);
 
