@@ -19,7 +19,6 @@ namespace timelord
             this.Name = "EditMaster";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.ResumeLayout(false);
-
         }
     }
 }

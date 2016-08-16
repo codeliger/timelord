@@ -34,7 +34,7 @@ namespace timelord
             timer.Tick += Timer_Tick;
             timer.Interval = 1000;
 
-            // reset duration
+            // reset duration (the @ symbol makes tostring ignore escape characters)
             lblTaskDuration.Text = TimeSpan.FromSeconds(0).ToString(@"hh\:mm\:ss");
 
             dgvTimesheet.Columns.Add("taskname", "Task");
@@ -53,6 +53,9 @@ namespace timelord
 
         }
 
+        /// <summary>
+        /// Edit the cell value on doubleclick
+        /// </summary>
         private void DgvTimesheet_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
 
@@ -69,6 +72,7 @@ namespace timelord
                     case 1:
                         editor = new EditTime(timesheet.dataset.Tables[0].Rows[e.RowIndex][e.ColumnIndex + 1].ToString());
                         break;
+                    // The date column is not currently editable
                 }
 
                 if (editor != null && editor.ShowDialog() == DialogResult.OK)
