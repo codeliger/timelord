@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.SQLite;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
@@ -16,7 +17,7 @@ namespace timelord
         Timer timer;
         bool timerState = false;
         Task ActiveTask;
-        List<Task> Tasks;
+        BindingSource source;
 
         /// <summary>
         /// sets up the form
@@ -25,8 +26,11 @@ namespace timelord
         {
             InitializeComponent();
 
+            Clipboard.SetText(DateTime.Now.ToString());
+
             this.MaximizeBox = false;
             this.MinimizeBox = true;
+            dgvTimesheet.AutoGenerateColumns = false;
 
             txtTaskName.GotFocus += TxtTaskName_GotFocus;
             dgvTimesheet.SelectionChanged += DgvTimesheet_SelectionChanged;
@@ -38,16 +42,25 @@ namespace timelord
             timer.Tick += Timer_Tick;
             timer.Interval = 1000;
 
-            Tasks = new List<Task>();
-
-            // reset duration (the @ symbol makes tostring ignore escape characters)
-            lblTaskDuration.Text = TimeSpan.FromSeconds(0).ToString(@"hh\:mm\:ss");
+            AddDataGridViewColumns();
 
             dgvTimesheet.CellDoubleClick += DgvTimesheet_CellDoubleClick;
-
-            dgvTimesheet.DataSource = Tasks;
+            dgvTimesheet.CellValueChanged += DgvTimesheet_CellValueChanged;
         }
 
+        #region Events
+        
+        private void DgvTimesheet_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            // ensure cell index is correct index
+            // change cell background color to match
+            if (dgvTimesheet.Columns[e.ColumnIndex].Name == "status")
+            {
+                UpdateRowBackgroundColor(dgvTimesheet.Rows[e.RowIndex]);
+            }
+        }
+
+        
         private void DgvTimesheet_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
             DataGridViewRow row = dgvTimesheet.Rows[e.RowIndex];
@@ -58,23 +71,40 @@ namespace timelord
             taskContextMenu.Items.Add("Delete").Click += taskContextMenuDelete_Click;
 
             // conditional context menu entries
-            switch ( int.Parse( row.Cells["status"].ToString() ) )
+            switch ( (TaskStatus) Enum.Parse(typeof(TaskStatus), dgvTimesheet.Rows[e.RowIndex].Cells["status"].Value.ToString() ) )
             {
-                case 0:
+                case TaskStatus.UNINVOICED:
                     taskContextMenu.Items.Add("Mark as Invoiced").Click += markAsInvoiced;
                     taskContextMenu.Items.Add("Mark as Paid").Click += markAsPaid;
                     break;
-                case 1:
+                case TaskStatus.INVOICED:
                     taskContextMenu.Items.Add("Mark as Not Invoiced").Click += markAsNotInvoiced;
                     taskContextMenu.Items.Add("Mark as Paid").Click += markAsPaid;
                     break;
-                case 2:
+                case TaskStatus.PAID:
                     taskContextMenu.Items.Add("Mark as Not Invoiced").Click += markAsNotInvoiced;
                     taskContextMenu.Items.Add("Mark as Invoiced").Click += markAsInvoiced;
                     break;
             }
 
             dgvTimesheet.Rows[e.RowIndex].ContextMenuStrip = taskContextMenu;
+
+            row.Cells["duration"].Value = DateTime.Parse(row.Cells["enddate"].Value.ToString()).Subtract(DateTime.Parse(row.Cells["begindate"].Value.ToString())).ToString();
+
+            DataGridViewCellStyle defaultStyle = new DataGridViewCellStyle();
+
+            // Changes color of cells based on if it has been invoiced or paid
+
+            defaultStyle.ForeColor = Color.Black;
+            defaultStyle.SelectionForeColor = Color.Black;
+            dgvTimesheet.Rows[e.RowIndex].DefaultCellStyle = defaultStyle;
+
+            UpdateRowBackgroundColor(dgvTimesheet.Rows[e.RowIndex]);
+        }
+
+        private void UpdateRowBackgroundColor(DataGridViewRow dataGridViewRow)
+        {
+            dataGridViewRow.DefaultCellStyle.SelectionBackColor  = dataGridViewRow.DefaultCellStyle.BackColor = getTaskColor((TaskStatus)Enum.Parse(typeof(TaskStatus), dataGridViewRow.Cells["status"].Value.ToString()));
         }
 
         /// <summary>
@@ -90,11 +120,11 @@ namespace timelord
 
                 switch (e.ColumnIndex)
                 {
-                    case 0:
-                        editor = new EditTitle(timesheet.dataset.Tables[0].Rows[e.RowIndex][e.ColumnIndex + 1].ToString());
-                        break;
                     case 1:
-                        editor = new EditTime(timesheet.dataset.Tables[0].Rows[e.RowIndex][e.ColumnIndex + 1].ToString());
+                        editor = new EditTitle(dgvTimesheet.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
+                        break;
+                    case 2:
+                        editor = new EditTime(dgvTimesheet.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
                         break;
                     // The date column is not currently editable
                 }
@@ -103,11 +133,9 @@ namespace timelord
                 {
                     newValue = editor.getValue();
 
-                    timesheet.dataset.Tables[0].Rows[e.RowIndex][e.ColumnIndex + 1] = newValue;
+                    timesheet.Tasks().Rows[e.RowIndex][e.ColumnIndex] = newValue;
 
-                    timesheet.synchronizeDatasetWithDatabase();
-
-                    fillDataGridView();
+                    timesheet.Update();
                 }
 
             }
@@ -127,7 +155,6 @@ namespace timelord
             }
         }
 
-        #region Events
 
         /// <summary>
         /// Toggle the font weight of the selected row
@@ -160,7 +187,7 @@ namespace timelord
         /// </summary>
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
-            TimesheetClose();
+            DisableTimesheet();
         }
 
         /// <summary>
@@ -176,20 +203,22 @@ namespace timelord
         /// </summary>
         private void mnuTimesheetOpen_Click(object sender, EventArgs e)
         {
-            OpenFileDialog fileBrowser = new OpenFileDialog();
-            fileBrowser.CheckFileExists = false;
-            fileBrowser.CheckPathExists = false;
-            fileBrowser.DefaultExt = "sqlite";
-            fileBrowser.Multiselect = false;
+            OpenFileDialog fileBrowser = new OpenFileDialog()
+            {
+                CheckFileExists = false,
+                CheckPathExists = false,
+                DefaultExt = "sqlite",
+                Multiselect = false
+            };
 
             DialogResult result = fileBrowser.ShowDialog();
 
             if (result.Equals(DialogResult.OK) && isSQLiteDatabase(fileBrowser.FileName))
             {
-                TimesheetClose();
+                DisableTimesheet();
                 timesheet = new Timesheet(fileBrowser.FileName);
-                this.FormClosed += FrmMain_FormClosed;
-                TimesheetOpen();
+
+                EnableTimesheet();
             }
             else if (result != DialogResult.Cancel)
             {
@@ -210,7 +239,7 @@ namespace timelord
             if (fileBrowser.ShowDialog() == DialogResult.OK)
             {
                 timesheet = new Timesheet(fileBrowser.FileName);
-                TimesheetOpen();
+                EnableTimesheet();
             }
         }
 
@@ -219,7 +248,7 @@ namespace timelord
         /// </summary>
         private void mnuTimesheetClose_Click(object sender, EventArgs e)
         {
-            TimesheetClose();
+            DisableTimesheet();
         }
 
 
@@ -235,12 +264,8 @@ namespace timelord
             {
                 foreach (DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
                 {
-                    timesheet.dataset.Tables[0].Rows[selectedRow.Index].Delete();
+                    timesheet.Tasks().Rows[selectedRow.Index].Delete();
                 }
-
-                timesheet.synchronizeDatasetWithDatabase();
-
-                fillDataGridView();
             }
         }
 
@@ -256,6 +281,7 @@ namespace timelord
                 btnTaskSave.Enabled = false;
                 btnTaskClear.Enabled = false;
                 timerState = true;
+
                 if(ActiveTask.BeginDate == DateTime.MinValue)
                 {
                     ActiveTask.BeginDate = DateTime.Now;
@@ -268,6 +294,7 @@ namespace timelord
                 btnTaskSave.Enabled = true;
                 btnTaskStart.Text = "Start";
                 timerState = false;
+
                 ActiveTask.EndDate = DateTime.Now;
             }
         }
@@ -289,6 +316,7 @@ namespace timelord
         {
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to clear the task?", "Clear Time", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1))
             {
+                ActiveTask = new Task();
                 setTimerText(ActiveTask.Duration);
                 btnTaskSave.Enabled = false;
                 btnTaskClear.Enabled = false;
@@ -301,35 +329,81 @@ namespace timelord
         /// </summary>
         private void btnTaskSave_Click(object sender, EventArgs e)
         {
-            DataRow row = timesheet.dataset.Tables[0].NewRow();
+            DataRow row = timesheet.Tasks().NewRow();
 
-            row["name"] = txtTaskName.Text;
-            row["begindate"] = ActiveTask.BeginDate.ToUniversalTime();
-            row["enddate"] = ActiveTask.EndDate.ToUniversalTime();
-            row["status"] = ActiveTask.Status.ToString();
+            ActiveTask.Description = lblTaskName.Text;
 
-            timesheet.dataset.Tables[0].Rows.Add(row);
+            row["description"] = ActiveTask.Description;
+            row["begindate"] = ActiveTask.BeginDate;
+            row["enddate"] = ActiveTask.EndDate;
+            row["status"] = ActiveTask.Status;
 
-            timesheet.synchronizeDatasetWithDatabase();
+            timesheet.Tasks().Rows.Add(row);
 
-            fillDataGridView();
+            timesheet.Update();
 
             ActiveTask = new Task();
-
-            // clear
             setTimerText(ActiveTask.Duration);
             btnTaskSave.Enabled = false;
             txtTaskName.Text = string.Empty;
+            txtTaskName.Focus();
         }
 
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// Open the timesheet and enable the form elements
-        /// </summary>
-        private void TimesheetOpen()
+        private void AddDataGridViewColumns()
+        {
+            dgvTimesheet.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "id",
+                Visible = false,
+                DataPropertyName = "id"
+            });
+
+            dgvTimesheet.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "description",
+                HeaderText = "Description",
+                Visible = true,
+                DataPropertyName = "description"
+            });
+
+            dgvTimesheet.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "duration",
+                HeaderText = "Duration",
+                Visible = true,
+
+            });
+
+            dgvTimesheet.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "begindate",
+                HeaderText = "Date Started",
+                Visible = false,
+                DataPropertyName = "begindate"
+            });
+
+            dgvTimesheet.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "enddate",
+                HeaderText = "Date Completed",
+                Visible = true,
+                DataPropertyName = "enddate"
+            });
+
+            dgvTimesheet.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "status",
+                Visible = false,
+                DataPropertyName = "status"
+            });
+        }
+
+
+        private void EnableTimesheet()
         {
             dgvTimesheet.Enabled = true;
             mnuTimesheetClose.Enabled = true;
@@ -337,49 +411,34 @@ namespace timelord
             txtTaskName.Enabled = true;
             lblTaskName.Enabled = true;
             btnTaskSave.Enabled = false;
-            fillDataGridView();
+
             ActiveTask = new Task();
+            source = new BindingSource();
+            source.DataSource = timesheet.Tasks();
+
+            dgvTimesheet.DataSource = source;
+
+            this.FormClosed += FrmMain_FormClosed;
         }
 
         /// <summary>
         /// Close a timesheet to open a new one
         /// </summary>
-        private void TimesheetClose()
+        private void DisableTimesheet()
         {
             if (timesheet != null)
             {
+                timesheet.Tasks().Clear();
                 timesheet.close();
                 timesheet = null;
             }
+
 
             mnuTimesheetClose.Enabled = false;
             btnTaskStart.Enabled = false;
             txtTaskName.Enabled = false;
             lblTaskName.Enabled = false;
             dgvTimesheet.Enabled = false;
-            dgvTimesheet.Rows.Clear();
-        }
-
-        /// <summary>
-        /// clear and redraw the timesheet
-        /// </summary>
-        private void fillDataGridView()
-        {
-
-            Tasks.Clear();
-
-            foreach (DataRow tableRow in timesheet.dataset.Tables[0].Rows)
-            {
-                Task task = new Task()
-                {
-                    Description = txtTaskName.Text,
-                    BeginDate = DateTime.Parse(tableRow["begindate"].ToString()),
-                    EndDate = DateTime.Parse(tableRow["enddate"].ToString()),
-                    Status = (TaskStatus) int.Parse(tableRow["status"].ToString())
-                };
-
-                Tasks.Add(task);
-            }
         }
 
 
@@ -417,12 +476,10 @@ namespace timelord
         {
             foreach (DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
             {
-                timesheet.dataset.Tables[0].Rows[selectedRow.Index]["status"] = (int) state;
+                timesheet.Tasks().Rows[selectedRow.Index]["status"] = (int) state;
             }
 
-            timesheet.synchronizeDatasetWithDatabase();
-
-            fillDataGridView();
+            timesheet.Update();
         }
 
 
@@ -432,7 +489,7 @@ namespace timelord
         /// <param name="time">The time in seconds to set it to</param>
         private void setTimerText(TimeSpan duration)
         {
-            lblTaskDuration.Text = duration.TotalSeconds.ToString();
+            lblTaskDuration.Text = duration.ToString(@"hh\:mm\:ss");
         }
 
         /// <summary>

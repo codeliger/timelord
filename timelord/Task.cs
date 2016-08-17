@@ -13,45 +13,24 @@ namespace timelord
         {
             get
             {
-                if (EndDate == DateTime.MinValue)
+                if (BeginDate == DateTime.MinValue)
+                    return new TimeSpan(0, 0, 0);
+                else if (EndDate == DateTime.MinValue)
                     return DateTime.Now.Subtract(this.BeginDate);
                 else
                     return this.EndDate.Subtract(this.BeginDate);
             }
         }
 
-        public DateTime BeginDate
-        {
-            get {
-                if (this.BeginDate == DateTime.MinValue)
-                    throw new Exception("The BeginDate of the task with description: " + Description + " is equal to DateTime.MinValue.");
-                return BeginDate;
-            }
-            set
-            {
-                BeginDate = value;
-            }
-            
-        }
+        public DateTime BeginDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public TaskStatus Status { get; set; }
 
-        public DateTime EndDate
+        public Task()
         {
-            get
-            {
-                if (this.EndDate == DateTime.MinValue)
-                    throw new Exception("The EndDate of the task with description: " + Description + " is equal to DateTime.MinValue.");
-                return EndDate;
-            }
-            set
-            {
-                EndDate = value;
-            }
-        }
-
-        public TaskStatus Status
-        {
-            get;
-            set;
+            this.Description = string.Empty;
+            this.BeginDate = new DateTime();
+            this.EndDate = new DateTime();
         }
     }
 

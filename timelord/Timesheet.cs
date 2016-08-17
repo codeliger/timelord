@@ -1,8 +1,8 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Windows.Forms;
+
 namespace timelord
 {
     /// <summary>
@@ -14,12 +14,7 @@ namespace timelord
         private SQLiteConnection sqlite;
         private SQLiteDataAdapter adapter;
         private SQLiteCommandBuilder builder;
-        
-        public DataSet dataset
-        {
-            get;
-            private set;
-        }
+        private DataTable datatable;
 
         /// <summary>
         /// Creates a timesheet object that determines if the filepath exists.
@@ -44,9 +39,9 @@ namespace timelord
 
             prepareQueries();
 
-            this.dataset = new DataSet();
+            this.datatable = new DataTable();
 
-            this.adapter.Fill(this.dataset);
+            this.adapter.Fill(this.datatable);
         }
 
         /// <summary>
@@ -80,7 +75,7 @@ namespace timelord
         /// </summary>
         private void createSchema()
         {
-            string query = "CREATE TABLE task (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, begindate TEXT, enddate TEXT, status INTEGER default 0)";
+            string query = "CREATE TABLE task (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, begindate TEXT, enddate TEXT, status INTEGER default 0)";
 
             SQLiteCommand cmd = new SQLiteCommand(query, sqlite);
 
@@ -93,7 +88,7 @@ namespace timelord
         /// </summary>
         private void prepareQueries()
         {
-            adapter = new SQLiteDataAdapter("select id,name,begindate,enddate,status from task", sqlite);
+            adapter = new SQLiteDataAdapter("select id,description,begindate,enddate,status from task", sqlite);
 
             builder = new SQLiteCommandBuilder(adapter);
 
@@ -103,18 +98,21 @@ namespace timelord
         }
 
         /// <summary>
-        /// Tells the data adapter to update the database to match the dataset
+        /// Return the task table
         /// </summary>
-        /// <param name="dataset"></param>
-        public void synchronizeDatasetWithDatabase()
+        /// <returns></returns>
+        public DataTable Tasks()
         {
-            adapter.Update(this.dataset);
+            return this.datatable;
+        }
 
-            // Empty the dataset
-            dataset.Clear();
+        public void Update()
+        {
+            adapter.Update(datatable);
+            
+            datatable.Clear();
 
-            // Fill the dataset so it contains the same data as the database
-            adapter.Fill(this.dataset);
+            adapter.Fill(datatable);
         }
 
         /// <summary>
