@@ -1,6 +1,6 @@
 ﻿namespace timelord
 {
-    partial class EditTitle
+    partial class EditDescription
     {
         /// <summary>
         /// Required designer variable.

@@ -112,32 +112,32 @@ namespace timelord
         /// </summary>
         private void DgvTimesheet_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-
             if (e.RowIndex > -1 && e.ColumnIndex > -1)
             {
-                string newValue;
                 EditMaster editor = null;
 
-                switch (e.ColumnIndex)
+                switch (dgvTimesheet.Columns[e.ColumnIndex].Name)
                 {
-                    case 1:
-                        editor = new EditTitle(dgvTimesheet.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
+                    case "description":
+                        editor = new EditDescription(dgvTimesheet.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
+                        if(editor.ShowDialog() == DialogResult.OK)
+                        {
+                            timesheet.Tasks().Rows[e.RowIndex]["description"] = editor.getValue();
+                        }
+
+                        timesheet.Update();
                         break;
-                    case 2:
-                        editor = new EditTime(dgvTimesheet.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
+                    case "duration":
+                        editor = new EditTime(DateTime.Parse(timesheet.Tasks().Rows[e.RowIndex]["enddate"].ToString()).Subtract(DateTime.Parse(timesheet.Tasks().Rows[e.RowIndex]["begindate"].ToString())));
+                        if(editor.ShowDialog() == DialogResult.OK)
+                        {
+                            timesheet.Tasks().Rows[e.RowIndex]["enddate"] = DateTime.Parse(timesheet.Tasks().Rows[e.RowIndex]["begindate"].ToString()).Add(TimeSpan.Parse(editor.getValue()));
+                        }
+                        timesheet.Update();
                         break;
-                    // The date column is not currently editable
+                    default:
+                        return;
                 }
-
-                if (editor != null && editor.ShowDialog() == DialogResult.OK)
-                {
-                    newValue = editor.getValue();
-
-                    timesheet.Tasks().Rows[e.RowIndex][e.ColumnIndex] = newValue;
-
-                    timesheet.Update();
-                }
-
             }
         }
 
@@ -331,7 +331,7 @@ namespace timelord
         {
             DataRow row = timesheet.Tasks().NewRow();
 
-            ActiveTask.Description = lblTaskName.Text;
+            ActiveTask.Description = txtTaskName.Text;
 
             row["description"] = ActiveTask.Description;
             row["begindate"] = ActiveTask.BeginDate;

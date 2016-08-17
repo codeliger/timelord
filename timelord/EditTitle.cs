@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace timelord
 {
-    public partial class EditTitle : EditMaster
+    public partial class EditDescription : EditMaster
     {
-        public EditTitle(string initialValue)
+        public EditDescription(string initialValue)
         {
             InitializeComponent();
             this.txtCell.Text = initialValue;
