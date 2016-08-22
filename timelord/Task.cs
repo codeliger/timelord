@@ -13,7 +13,7 @@ namespace timelord
         {
             get
             {
-                if (BeginDate == DateTime.MinValue)
+                if (BeginDate == DateTime.MinValue) // BeginDate has not been set
                     return new TimeSpan(0, 0, 0);
                 else if (EndDate == DateTime.MinValue)
                     return DateTime.Now.Subtract(this.BeginDate);
@@ -31,6 +31,7 @@ namespace timelord
             this.Description = string.Empty;
             this.BeginDate = new DateTime();
             this.EndDate = new DateTime();
+            this.Status = TaskStatus.UNINVOICED;
         }
     }
 

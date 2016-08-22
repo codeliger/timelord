@@ -39,7 +39,7 @@
             this.mnuInvoiceCreate = new System.Windows.Forms.ToolStripMenuItem();
             this.dgvTimesheet = new System.Windows.Forms.DataGridView();
             this.txtTaskName = new System.Windows.Forms.TextBox();
-            this.btnTaskStart = new System.Windows.Forms.Button();
+            this.btnTaskToggle = new System.Windows.Forms.Button();
             this.lblTaskName = new System.Windows.Forms.Label();
             this.lblTaskDuration = new System.Windows.Forms.Label();
             this.btnTaskClear = new System.Windows.Forms.Button();
@@ -141,15 +141,15 @@
             // 
             // btnTaskStart
             // 
-            this.btnTaskStart.Enabled = false;
-            this.btnTaskStart.ImageAlign = System.Drawing.ContentAlignment.TopRight;
-            this.btnTaskStart.Location = new System.Drawing.Point(440, 39);
-            this.btnTaskStart.Name = "btnTaskStart";
-            this.btnTaskStart.Size = new System.Drawing.Size(75, 23);
-            this.btnTaskStart.TabIndex = 3;
-            this.btnTaskStart.Text = "Start";
-            this.btnTaskStart.UseVisualStyleBackColor = true;
-            this.btnTaskStart.Click += new System.EventHandler(this.btnTaskStart_Click);
+            this.btnTaskToggle.Enabled = false;
+            this.btnTaskToggle.ImageAlign = System.Drawing.ContentAlignment.TopRight;
+            this.btnTaskToggle.Location = new System.Drawing.Point(440, 39);
+            this.btnTaskToggle.Name = "btnTaskStart";
+            this.btnTaskToggle.Size = new System.Drawing.Size(75, 23);
+            this.btnTaskToggle.TabIndex = 3;
+            this.btnTaskToggle.Text = "Start";
+            this.btnTaskToggle.UseVisualStyleBackColor = true;
+            this.btnTaskToggle.Click += new System.EventHandler(this.btnTaskToggle_Click);
             // 
             // lblTaskName
             // 
@@ -194,7 +194,7 @@
             // 
             // frmMain
             // 
-            this.AcceptButton = this.btnTaskStart;
+            this.AcceptButton = this.btnTaskToggle;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(923, 639);
@@ -202,7 +202,7 @@
             this.Controls.Add(this.btnTaskClear);
             this.Controls.Add(this.lblTaskDuration);
             this.Controls.Add(this.lblTaskName);
-            this.Controls.Add(this.btnTaskStart);
+            this.Controls.Add(this.btnTaskToggle);
             this.Controls.Add(this.txtTaskName);
             this.Controls.Add(this.dgvTimesheet);
             this.Controls.Add(this.msMain);
@@ -230,7 +230,7 @@
         private System.Windows.Forms.ToolStripMenuItem mnuTimesheetNew;
         private System.Windows.Forms.DataGridView dgvTimesheet;
         private System.Windows.Forms.TextBox txtTaskName;
-        private System.Windows.Forms.Button btnTaskStart;
+        private System.Windows.Forms.Button btnTaskToggle;
         private System.Windows.Forms.Label lblTaskName;
         private System.Windows.Forms.ToolStripMenuItem mnuTimesheetClose;
         private System.Windows.Forms.Label lblTaskDuration;

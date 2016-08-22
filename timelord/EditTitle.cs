@@ -16,9 +16,15 @@ namespace timelord
         {
             InitializeComponent();
             this.txtCell.Text = initialValue;
+            Shown += EditDescription_Shown;
         }
 
-        public override string getValue()
+        private void EditDescription_Shown(object sender, EventArgs e)
+        {
+            txtCell.Focus();
+        }
+
+        public string getValue()
         {
             return this.txtCell.Text;
         }

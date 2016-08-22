@@ -1,7 +1,5 @@
 ﻿using System.Data;
 using System.Data.SQLite;
-using System.IO;
-using System.Windows.Forms;
 
 namespace timelord
 {
@@ -10,109 +8,70 @@ namespace timelord
     /// </summary>
     class Timesheet
     {
-        private string filePath;
-        private SQLiteConnection sqlite;
-        private SQLiteDataAdapter adapter;
-        private SQLiteCommandBuilder builder;
-        private DataTable datatable;
+        private readonly string _filePath;
+        private SQLiteConnection _sqlite;
+        private SQLiteDataAdapter _adapter;
+        private SQLiteCommandBuilder _builder;
+        private DataTable _dataTable;
+        private const string _createTaskTable = "CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, begindate TEXT, enddate TEXT, status INTEGER default 0)";
+        private const string _selectTaskQuery = "SELECT id,description,begindate,enddate,status FROM task";
 
-        /// <summary>
-        /// Creates a timesheet object that determines if the filepath exists.
-        /// If the filepath exists then it opens a database.
-        /// If it does not exist it creates a database.
-        /// </summary>
-        /// <param name="filePath">The path to open or create a database file at.</param>
+
         public Timesheet(string filePath)
         {
-            this.filePath = filePath;
+            this._filePath = filePath;
 
-            if (File.Exists(filePath))
-            {
-                openDatabase();
+            _dataTable = new DataTable();
 
-            }else
-            {
-                createDatabase();
+            OpenDatabase();
 
-                createSchema();
-            }
+            CreateSchema();
 
-            prepareQueries();
+            PrepareQueries();
 
-            this.datatable = new DataTable();
-
-            this.adapter.Fill(this.datatable);
-        }
-
-        /// <summary>
-        /// Calls the methods that create the database file, connection, and schema
-        /// </summary>
-        private void createDatabase()
-        {
-            SQLiteConnection.CreateFile(filePath);
-
-            openDatabase();
+            Fill();
         }
 
         /// <summary>
         /// Creates the database connection
         /// </summary>
-        private void openDatabase()
+        private void OpenDatabase()
         {
-            sqlite = new SQLiteConnection("Data Source=" + this.filePath + ";Version=3;");
-            try
-            {
-                sqlite.Open();
-            }
-            catch(SQLiteException e)
-            {
-                MessageBox.Show(e.Message);
-            }
+            _sqlite = new SQLiteConnection("Data Source=" + this._filePath + ";Version=3;");
+            _sqlite.Open();
         }
 
-        /// <summary>
-        /// Creates the schema for all tables nessicary
-        /// </summary>
-        private void createSchema()
+        private void CreateSchema()
         {
-            string query = "CREATE TABLE task (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, begindate TEXT, enddate TEXT, status INTEGER default 0)";
-
-            SQLiteCommand cmd = new SQLiteCommand(query, sqlite);
-
+            SQLiteCommand cmd = new SQLiteCommand(_createTaskTable, _sqlite);
             cmd.ExecuteNonQuery();
-
         }
 
-        /// <summary>
-        /// Prepares the queries used to manipulate the timesheet
-        /// </summary>
-        private void prepareQueries()
+        private void PrepareQueries()
         {
-            adapter = new SQLiteDataAdapter("select id,description,begindate,enddate,status from task", sqlite);
+            _adapter = new SQLiteDataAdapter(_selectTaskQuery, _sqlite);
 
-            builder = new SQLiteCommandBuilder(adapter);
+            _builder = new SQLiteCommandBuilder(_adapter);
 
-            adapter.UpdateCommand = builder.GetUpdateCommand();
-            adapter.DeleteCommand = builder.GetDeleteCommand();
-            adapter.InsertCommand = builder.GetInsertCommand();
+            _adapter.UpdateCommand = _builder.GetUpdateCommand();
+            _adapter.DeleteCommand = _builder.GetDeleteCommand();
+            _adapter.InsertCommand = _builder.GetInsertCommand();
         }
 
-        /// <summary>
-        /// Return the task table
-        /// </summary>
-        /// <returns></returns>
         public DataTable Tasks()
         {
-            return this.datatable;
+            return _dataTable;
         }
 
         public void Update()
         {
-            adapter.Update(datatable);
-            
-            datatable.Clear();
+            _adapter.Update(_dataTable);
+        }
 
-            adapter.Fill(datatable);
+        public void Fill()
+        {
+            _dataTable.Clear();
+            _adapter.Fill(_dataTable);
         }
 
         /// <summary>
@@ -120,7 +79,7 @@ namespace timelord
         /// </summary>
         public void close()
         {
-            sqlite.Close();
+            _sqlite.Close();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace timelord
             txtSeconds.Text = time.Seconds.ToString();
         }
 
-        public override string getValue()
+        public string getValue()
         {
             return new TimeSpan(int.Parse(this.txtHours.Text), int.Parse(this.txtMinutes.Text), int.Parse(this.txtSeconds.Text)).ToString();
         }

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Data;
-using System.Data.SQLite;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
-using System.Collections.Generic;
 
 namespace timelord
 {
@@ -15,6 +13,7 @@ namespace timelord
     {
         Timesheet timesheet;
         Timer timer;
+        int time;
         bool timerState = false;
         Task ActiveTask;
         BindingSource source;
@@ -25,8 +24,6 @@ namespace timelord
         public frmMain()
         {
             InitializeComponent();
-
-            Clipboard.SetText(DateTime.Now.ToString());
 
             this.MaximizeBox = false;
             this.MinimizeBox = true;
@@ -41,6 +38,7 @@ namespace timelord
             timer = new Timer();
             timer.Tick += Timer_Tick;
             timer.Interval = 1000;
+            time = 0;
 
             AddDataGridViewColumns();
 
@@ -60,18 +58,28 @@ namespace timelord
             }
         }
 
-        
+        /// <summary>
+        /// Every time a row is added determine the context menu buttons needed based on its state and change the background color of the task.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DgvTimesheet_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
             DataGridViewRow row = dgvTimesheet.Rows[e.RowIndex];
+
+            Task AddedTask = new Task();
+
+            AddedTask.BeginDate = DateTime.Parse(row.Cells["begindate"].Value.ToString());
+            AddedTask.EndDate = DateTime.Parse(row.Cells["enddate"].Value.ToString());
+
+            AddedTask.Status = (TaskStatus)(Convert.ToInt32(row.Cells["status"].Value));
 
             // create context menu for each row
             ContextMenuStrip taskContextMenu = new ContextMenuStrip();
 
             taskContextMenu.Items.Add("Delete").Click += taskContextMenuDelete_Click;
-
-            // conditional context menu entries
-            switch ( (TaskStatus) Enum.Parse(typeof(TaskStatus), dgvTimesheet.Rows[e.RowIndex].Cells["status"].Value.ToString() ) )
+       
+            switch ( AddedTask.Status )
             {
                 case TaskStatus.UNINVOICED:
                     taskContextMenu.Items.Add("Mark as Invoiced").Click += markAsInvoiced;
@@ -89,7 +97,7 @@ namespace timelord
 
             dgvTimesheet.Rows[e.RowIndex].ContextMenuStrip = taskContextMenu;
 
-            row.Cells["duration"].Value = DateTime.Parse(row.Cells["enddate"].Value.ToString()).Subtract(DateTime.Parse(row.Cells["begindate"].Value.ToString())).ToString();
+            row.Cells["duration"].Value = AddedTask.Duration;
 
             DataGridViewCellStyle defaultStyle = new DataGridViewCellStyle();
 
@@ -122,7 +130,7 @@ namespace timelord
                         editor = new EditDescription(dgvTimesheet.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
                         if(editor.ShowDialog() == DialogResult.OK)
                         {
-                            timesheet.Tasks().Rows[e.RowIndex]["description"] = editor.getValue();
+                            timesheet.Tasks().Rows[e.RowIndex]["description"] = ( (EditDescription) editor).getValue();
                         }
 
                         timesheet.Update();
@@ -131,7 +139,7 @@ namespace timelord
                         editor = new EditTime(DateTime.Parse(timesheet.Tasks().Rows[e.RowIndex]["enddate"].ToString()).Subtract(DateTime.Parse(timesheet.Tasks().Rows[e.RowIndex]["begindate"].ToString())));
                         if(editor.ShowDialog() == DialogResult.OK)
                         {
-                            timesheet.Tasks().Rows[e.RowIndex]["enddate"] = DateTime.Parse(timesheet.Tasks().Rows[e.RowIndex]["begindate"].ToString()).Add(TimeSpan.Parse(editor.getValue()));
+                            timesheet.Tasks().Rows[e.RowIndex]["enddate"] = DateTime.Parse(timesheet.Tasks().Rows[e.RowIndex]["begindate"].ToString()).Add(TimeSpan.Parse( ( (EditTime) editor).getValue()));
                         }
                         timesheet.Update();
                         break;
@@ -272,12 +280,12 @@ namespace timelord
         /// <summary>
         /// Starts the task timer
         /// </summary>
-        private void btnTaskStart_Click(object sender, EventArgs e)
+        private void btnTaskToggle_Click(object sender, EventArgs e)
         {
             if (!timerState)
             {
                 timer.Start();
-                btnTaskStart.Text = "Stop";
+                btnTaskToggle.Text = "Stop";
                 btnTaskSave.Enabled = false;
                 btnTaskClear.Enabled = false;
                 timerState = true;
@@ -292,10 +300,8 @@ namespace timelord
                 timer.Stop();
                 btnTaskClear.Enabled = true;
                 btnTaskSave.Enabled = true;
-                btnTaskStart.Text = "Start";
+                btnTaskToggle.Text = "Start";
                 timerState = false;
-
-                ActiveTask.EndDate = DateTime.Now;
             }
         }
 
@@ -305,7 +311,8 @@ namespace timelord
         /// </summary>
         private void Timer_Tick(object sender, EventArgs e)
         {
-            setTimerText(ActiveTask.Duration);
+            time++;
+            setTimerText(time);
         }
 
 
@@ -317,7 +324,8 @@ namespace timelord
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to clear the task?", "Clear Time", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1))
             {
                 ActiveTask = new Task();
-                setTimerText(ActiveTask.Duration);
+                time = 0;
+                setTimerText(time);
                 btnTaskSave.Enabled = false;
                 btnTaskClear.Enabled = false;
                 txtTaskName.Text = string.Empty;
@@ -329,21 +337,25 @@ namespace timelord
         /// </summary>
         private void btnTaskSave_Click(object sender, EventArgs e)
         {
+            ActiveTask.Description = txtTaskName.Text;
+            ActiveTask.EndDate = ActiveTask.BeginDate.Add(TimeSpan.FromSeconds(time));
+
             DataRow row = timesheet.Tasks().NewRow();
 
-            ActiveTask.Description = txtTaskName.Text;
-
             row["description"] = ActiveTask.Description;
-            row["begindate"] = ActiveTask.BeginDate;
-            row["enddate"] = ActiveTask.EndDate;
-            row["status"] = ActiveTask.Status;
+            row["begindate"] = ActiveTask.BeginDate.ToString();
+            row["enddate"] = ActiveTask.EndDate.ToString();
+            row["status"] = (int) ActiveTask.Status;
 
             timesheet.Tasks().Rows.Add(row);
 
             timesheet.Update();
 
+            timesheet.Fill();
+
             ActiveTask = new Task();
-            setTimerText(ActiveTask.Duration);
+            time = 0;
+            setTimerText(time);
             btnTaskSave.Enabled = false;
             txtTaskName.Text = string.Empty;
             txtTaskName.Focus();
@@ -359,7 +371,7 @@ namespace timelord
             {
                 Name = "id",
                 Visible = false,
-                DataPropertyName = "id"
+                DataPropertyName = "id",
             });
 
             dgvTimesheet.Columns.Add(new DataGridViewTextBoxColumn()
@@ -398,7 +410,8 @@ namespace timelord
             {
                 Name = "status",
                 Visible = false,
-                DataPropertyName = "status"
+                DataPropertyName = "status",
+                ValueType = typeof(int) // TEMP: Doesn't force type for casting int to enum
             });
         }
 
@@ -407,13 +420,17 @@ namespace timelord
         {
             dgvTimesheet.Enabled = true;
             mnuTimesheetClose.Enabled = true;
-            btnTaskStart.Enabled = true;
+            btnTaskToggle.Enabled = true;
             txtTaskName.Enabled = true;
             lblTaskName.Enabled = true;
             btnTaskSave.Enabled = false;
 
             ActiveTask = new Task();
+
             source = new BindingSource();
+
+            timesheet.Fill();
+
             source.DataSource = timesheet.Tasks();
 
             dgvTimesheet.DataSource = source;
@@ -435,7 +452,7 @@ namespace timelord
 
 
             mnuTimesheetClose.Enabled = false;
-            btnTaskStart.Enabled = false;
+            btnTaskToggle.Enabled = false;
             txtTaskName.Enabled = false;
             lblTaskName.Enabled = false;
             dgvTimesheet.Enabled = false;
@@ -480,6 +497,8 @@ namespace timelord
             }
 
             timesheet.Update();
+
+            timesheet.Fill();
         }
 
 
@@ -487,9 +506,9 @@ namespace timelord
         /// Set the text of the timer
         /// </summary>
         /// <param name="time">The time in seconds to set it to</param>
-        private void setTimerText(TimeSpan duration)
+        private void setTimerText(int timeInSeconds)
         {
-            lblTaskDuration.Text = duration.ToString(@"hh\:mm\:ss");
+            lblTaskDuration.Text = TimeSpan.FromSeconds(timeInSeconds).ToString();
         }
 
         /// <summary>
