@@ -68,11 +68,10 @@ namespace timelord
             DataGridViewRow row = dgvTimesheet.Rows[e.RowIndex];
 
             Task AddedTask = new Task();
-
+            AddedTask.Description = row.Cells["description"].Value.ToString();
             AddedTask.BeginDate = DateTime.Parse(row.Cells["begindate"].Value.ToString());
             AddedTask.EndDate = DateTime.Parse(row.Cells["enddate"].Value.ToString());
-
-            AddedTask.Status = (TaskStatus)(Convert.ToInt32(row.Cells["status"].Value));
+            AddedTask.Status = (TaskStatus)(Enum.Parse(typeof(TaskStatus),row.Cells["status"].Value.ToString()));
 
             // create context menu for each row
             ContextMenuStrip taskContextMenu = new ContextMenuStrip();
@@ -95,7 +94,7 @@ namespace timelord
                     break;
             }
 
-            dgvTimesheet.Rows[e.RowIndex].ContextMenuStrip = taskContextMenu;
+            row.ContextMenuStrip = taskContextMenu;
 
             row.Cells["duration"].Value = AddedTask.Duration;
 
@@ -112,7 +111,7 @@ namespace timelord
 
         private void UpdateRowBackgroundColor(DataGridViewRow dataGridViewRow)
         {
-            dataGridViewRow.DefaultCellStyle.SelectionBackColor  = dataGridViewRow.DefaultCellStyle.BackColor = getTaskColor((TaskStatus)Enum.Parse(typeof(TaskStatus), dataGridViewRow.Cells["status"].Value.ToString()));
+            dataGridViewRow.DefaultCellStyle.SelectionBackColor = dataGridViewRow.DefaultCellStyle.BackColor = getTaskColor( (TaskStatus) Enum.Parse(typeof(TaskStatus), dataGridViewRow.Cells["status"].Value.ToString()));
         }
 
         /// <summary>
@@ -209,7 +208,7 @@ namespace timelord
         /// <summary>
         /// Opens a FileDialog to open an existing timesheet
         /// </summary>
-        private void mnuTimesheetOpen_Click(object sender, EventArgs e)
+        private void OpenTimesheet_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileBrowser = new OpenFileDialog()
             {
@@ -237,7 +236,7 @@ namespace timelord
         /// <summary>
         /// Opens a create timesheet dialog and creates a new timesheet
         /// </summary>
-        private void mnuTimesheetNew_Click(object sender, EventArgs e)
+        private void NewTimesheet_Click(object sender, EventArgs e)
         {
             SaveFileDialog fileBrowser = new SaveFileDialog();
             fileBrowser.CheckFileExists = false;
@@ -254,7 +253,7 @@ namespace timelord
         /// <summary>
         /// Closes the timesheet 
         /// </summary>
-        private void mnuTimesheetClose_Click(object sender, EventArgs e)
+        private void CloseTimesheet_Click(object sender, EventArgs e)
         {
             DisableTimesheet();
         }
@@ -280,7 +279,7 @@ namespace timelord
         /// <summary>
         /// Starts the task timer
         /// </summary>
-        private void btnTaskToggle_Click(object sender, EventArgs e)
+        private void ToggleTask_Click(object sender, EventArgs e)
         {
             if (!timerState)
             {
@@ -319,7 +318,7 @@ namespace timelord
         /// <summary>
         /// Clears the current task if one exists
         /// </summary>
-        private void btnTaskClear_Click(object sender, EventArgs e)
+        private void ClearTask_Click(object sender, EventArgs e)
         {
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to clear the task?", "Clear Time", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1))
             {
@@ -335,7 +334,7 @@ namespace timelord
         /// <summary>
         /// Add a row to the database when the user clicks save
         /// </summary>
-        private void btnTaskSave_Click(object sender, EventArgs e)
+        private void SaveTask_Click(object sender, EventArgs e)
         {
             ActiveTask.Description = txtTaskName.Text;
             ActiveTask.EndDate = ActiveTask.BeginDate.Add(TimeSpan.FromSeconds(time));
@@ -345,7 +344,7 @@ namespace timelord
             row["description"] = ActiveTask.Description;
             row["begindate"] = ActiveTask.BeginDate.ToString();
             row["enddate"] = ActiveTask.EndDate.ToString();
-            row["status"] = (int) ActiveTask.Status;
+            row["status"] = ActiveTask.Status.ToString();
 
             timesheet.Tasks().Rows.Add(row);
 
@@ -357,6 +356,7 @@ namespace timelord
             time = 0;
             setTimerText(time);
             btnTaskSave.Enabled = false;
+            btnTaskClear.Enabled = false;
             txtTaskName.Text = string.Empty;
             txtTaskName.Focus();
         }
@@ -411,7 +411,6 @@ namespace timelord
                 Name = "status",
                 Visible = false,
                 DataPropertyName = "status",
-                ValueType = typeof(int) // TEMP: Doesn't force type for casting int to enum
             });
         }
 
@@ -445,17 +444,19 @@ namespace timelord
         {
             if (timesheet != null)
             {
-                timesheet.Tasks().Clear();
+                dgvTimesheet.DataSource = null;
+                source = null;
                 timesheet.close();
                 timesheet = null;
             }
-
 
             mnuTimesheetClose.Enabled = false;
             btnTaskToggle.Enabled = false;
             txtTaskName.Enabled = false;
             lblTaskName.Enabled = false;
             dgvTimesheet.Enabled = false;
+            btnTaskSave.Enabled = false;
+            btnTaskClear.Enabled = false;
         }
 
 
@@ -493,7 +494,7 @@ namespace timelord
         {
             foreach (DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
             {
-                timesheet.Tasks().Rows[selectedRow.Index]["status"] = (int) state;
+                timesheet.Tasks().Rows[selectedRow.Index]["status"] = state.ToString();
             }
 
             timesheet.Update();

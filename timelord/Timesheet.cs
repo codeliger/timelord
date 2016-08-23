@@ -13,7 +13,7 @@ namespace timelord
         private SQLiteDataAdapter _adapter;
         private SQLiteCommandBuilder _builder;
         private DataTable _dataTable;
-        private const string _createTaskTable = "CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, begindate TEXT, enddate TEXT, status INTEGER default 0)";
+        private const string _createTaskTable = "CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, begindate TEXT, enddate TEXT, status TEXT)";
         private const string _selectTaskQuery = "SELECT id,description,begindate,enddate,status FROM task";
 
 

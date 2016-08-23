@@ -74,14 +74,14 @@
             this.mnuTimesheetOpen.Name = "mnuTimesheetOpen";
             this.mnuTimesheetOpen.Size = new System.Drawing.Size(103, 22);
             this.mnuTimesheetOpen.Text = "Open";
-            this.mnuTimesheetOpen.Click += new System.EventHandler(this.mnuTimesheetOpen_Click);
+            this.mnuTimesheetOpen.Click += new System.EventHandler(this.OpenTimesheet_Click);
             // 
             // mnuTimesheetNew
             // 
             this.mnuTimesheetNew.Name = "mnuTimesheetNew";
             this.mnuTimesheetNew.Size = new System.Drawing.Size(103, 22);
             this.mnuTimesheetNew.Text = "New";
-            this.mnuTimesheetNew.Click += new System.EventHandler(this.mnuTimesheetNew_Click);
+            this.mnuTimesheetNew.Click += new System.EventHandler(this.NewTimesheet_Click);
             // 
             // mnuTimesheetClose
             // 
@@ -89,7 +89,7 @@
             this.mnuTimesheetClose.Name = "mnuTimesheetClose";
             this.mnuTimesheetClose.Size = new System.Drawing.Size(103, 22);
             this.mnuTimesheetClose.Text = "Close";
-            this.mnuTimesheetClose.Click += new System.EventHandler(this.mnuTimesheetClose_Click);
+            this.mnuTimesheetClose.Click += new System.EventHandler(this.CloseTimesheet_Click);
             // 
             // mnuInvoice
             // 
@@ -149,7 +149,7 @@
             this.btnTaskToggle.TabIndex = 3;
             this.btnTaskToggle.Text = "Start";
             this.btnTaskToggle.UseVisualStyleBackColor = true;
-            this.btnTaskToggle.Click += new System.EventHandler(this.btnTaskToggle_Click);
+            this.btnTaskToggle.Click += new System.EventHandler(this.ToggleTask_Click);
             // 
             // lblTaskName
             // 
@@ -179,7 +179,7 @@
             this.btnTaskClear.TabIndex = 6;
             this.btnTaskClear.Text = "Clear";
             this.btnTaskClear.UseVisualStyleBackColor = true;
-            this.btnTaskClear.Click += new System.EventHandler(this.btnTaskClear_Click);
+            this.btnTaskClear.Click += new System.EventHandler(this.ClearTask_Click);
             // 
             // btnTaskSave
             // 
@@ -190,7 +190,7 @@
             this.btnTaskSave.TabIndex = 7;
             this.btnTaskSave.Text = "Save";
             this.btnTaskSave.UseVisualStyleBackColor = true;
-            this.btnTaskSave.Click += new System.EventHandler(this.btnTaskSave_Click);
+            this.btnTaskSave.Click += new System.EventHandler(this.SaveTask_Click);
             // 
             // frmMain
             // 
