@@ -457,6 +457,8 @@ namespace timelord
             dgvTimesheet.Enabled = false;
             btnTaskSave.Enabled = false;
             btnTaskClear.Enabled = false;
+            txtTaskName.Text = string.Empty;
+            setTimerText(0);
         }
 
 
@@ -536,7 +538,6 @@ namespace timelord
 
                     stream.Close();
                 }
-
             }
 
             return result;
