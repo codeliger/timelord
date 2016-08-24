@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.SQLite;
+using System;
 
 namespace timelord
 {
@@ -9,77 +10,85 @@ namespace timelord
     class Timesheet
     {
         private readonly string _filePath;
-        private SQLiteConnection _sqlite;
-        private SQLiteDataAdapter _adapter;
-        private SQLiteCommandBuilder _builder;
-        private DataTable _dataTable;
-        private const string _createTaskTable = "CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, begindate TEXT, enddate TEXT, status TEXT)";
-        private const string _selectTaskQuery = "SELECT id,description,begindate,enddate,status FROM task";
+        private const string createTaskTable = "CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, begindate TEXT, enddate TEXT, status TEXT)";
+        private const string selectTaskQuery = "SELECT id,description,begindate,enddate,status FROM task";
 
 
         public Timesheet(string filePath)
         {
             this._filePath = filePath;
 
-            _dataTable = new DataTable();
-
-            OpenDatabase();
-
-            CreateSchema();
-
-            PrepareQueries();
-
-            Fill();
+            ExecuteAction(c => CreateSchema(c));
         }
 
-        /// <summary>
-        /// Creates the database connection
-        /// </summary>
-        private void OpenDatabase()
+        private SQLiteConnection GetConnection()
         {
-            _sqlite = new SQLiteConnection("Data Source=" + this._filePath + ";Version=3;");
-            _sqlite.Open();
+            return new SQLiteConnection("Data Source=" + this._filePath + ";Version=3;");
         }
 
-        private void CreateSchema()
+        private void ExecuteAction(Action<SQLiteConnection> action)
         {
-            SQLiteCommand cmd = new SQLiteCommand(_createTaskTable, _sqlite);
-            cmd.ExecuteNonQuery();
+            using (SQLiteConnection c = GetConnection())
+            {
+                c.Open();
+
+                action(c);
+            }
         }
 
-        private void PrepareQueries()
+        private T ExecuteFunction<T>(Func<SQLiteConnection,T> function)
         {
-            _adapter = new SQLiteDataAdapter(_selectTaskQuery, _sqlite);
+            using (SQLiteConnection c = GetConnection())
+            {
+                c.Open();
 
-            _builder = new SQLiteCommandBuilder(_adapter);
+                return function(c);
+            }
+        }
 
-            _adapter.UpdateCommand = _builder.GetUpdateCommand();
-            _adapter.DeleteCommand = _builder.GetDeleteCommand();
-            _adapter.InsertCommand = _builder.GetInsertCommand();
+        private T ExecuteCommand<T>(Func<SQLiteDataAdapter, T> function)
+        {
+            return ExecuteFunction(c =>
+            {
+                using (SQLiteDataAdapter a = new SQLiteDataAdapter(selectTaskQuery, c))
+                {
+                    using (SQLiteCommandBuilder b = new SQLiteCommandBuilder(a))
+                    {
+                        a.UpdateCommand = b.GetUpdateCommand();
+                        a.DeleteCommand = b.GetDeleteCommand();
+                        a.InsertCommand = b.GetInsertCommand();
+
+                        return function(a);
+                    }
+                }
+            });
+        }
+
+        private void CreateSchema(SQLiteConnection c)
+        {
+            using (SQLiteCommand cmd = c.CreateCommand())
+            {
+                cmd.CommandText = createTaskTable;
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public DataTable Tasks()
         {
-            return _dataTable;
+            return ExecuteCommand(a =>
+            {
+                DataTable d = new DataTable("task");
+                a.Fill(d);
+                return d;
+            });
         }
 
-        public void Update()
+        public int Commit(DataTable d)
         {
-            _adapter.Update(_dataTable);
+            return ExecuteCommand(a =>{
+                return a.Update(d);
+            });
         }
 
-        public void Fill()
-        {
-            _dataTable.Clear();
-            _adapter.Fill(_dataTable);
-        }
-
-        /// <summary>
-        /// Closes the database connection
-        /// </summary>
-        public void close()
-        {
-            _sqlite.Close();
-        }
     }
 }

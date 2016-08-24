@@ -50,15 +50,18 @@
             this.txtCell.Size = new System.Drawing.Size(222, 20);
             this.txtCell.TabIndex = 2;
             // 
-            // EditTitle
+            // EditDescription
             // 
+            this.AcceptButton = this.btnSave;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(246, 71);
             this.Controls.Add(this.txtCell);
             this.Controls.Add(this.btnSave);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Name = "EditTitle";
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "EditDescription";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Edit Title";
             this.ResumeLayout(false);
