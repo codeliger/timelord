@@ -78,7 +78,11 @@ namespace timelord
             return ExecuteCommand(a =>
             {
                 DataTable d = new DataTable("task");
+
                 a.Fill(d);
+                d.PrimaryKey = new DataColumn[] { d.Columns["id"] };
+                d.Columns["id"].AutoIncrement = true;
+
                 return d;
             });
         }

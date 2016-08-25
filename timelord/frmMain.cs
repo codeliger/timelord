@@ -18,6 +18,9 @@ namespace timelord
         Task ActiveTask;
         BindingSource source;
         DataTable _table;
+        ContextMenuStrip cmUninvoiced;
+        ContextMenuStrip cmInvoiced;
+        ContextMenuStrip cmPaid;
 
         /// <summary>
         /// sets up the form
@@ -43,91 +46,84 @@ namespace timelord
 
             AddDataGridViewColumns();
 
+            CreateContextMenuStrips();
+
             dgvTimesheet.CellDoubleClick += DgvTimesheet_CellDoubleClick;
-            dgvTimesheet.CellValueChanged += DgvTimesheet_CellValueChanged;
         }
 
+        private void CreateContextMenuStrips()
+        {
+            cmUninvoiced = new ContextMenuStrip();
+            cmInvoiced = new ContextMenuStrip();
+            cmPaid = new ContextMenuStrip();
+
+            cmUninvoiced.Items.Add("Delete").Click += taskContextMenuDelete_Click;
+            cmInvoiced.Items.Add("Delete").Click += taskContextMenuDelete_Click;
+            cmPaid.Items.Add("Delete").Click += taskContextMenuDelete_Click;
+
+            cmUninvoiced.Items.Add("Mark as Invoiced").Click += markAsInvoiced;
+            cmUninvoiced.Items.Add("Mark as Paid").Click += markAsPaid;
+
+            cmInvoiced.Items.Add("Mark as Not Invoiced").Click += markAsNotInvoiced;
+            cmInvoiced.Items.Add("Mark as Paid").Click += markAsPaid;
+
+            cmPaid.Items.Add("Mark as Not Invoiced").Click += markAsNotInvoiced;
+            cmPaid.Items.Add("Mark as Invoiced").Click += markAsInvoiced;
+        }
 
 
         #region Events
 
-        private void DgvTimesheet_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            string columnName = dgvTimesheet.Columns[e.ColumnIndex].Name;
-
-            if (columnName == "status")
-            {
-                UpdateRowBackgroundColor(dgvTimesheet.Rows[e.RowIndex]);
-            }
-            else if(columnName == "enddate")
-            {
-                DataGridViewRow row = dgvTimesheet.Rows[e.RowIndex];
-                Task AddedTask = new Task();
-                AddedTask.BeginDate = DateTime.Parse(row.Cells["begindate"].Value.ToString());
-                AddedTask.EndDate = DateTime.Parse(row.Cells["enddate"].Value.ToString());
-                row.Cells["duration"].Value = AddedTask.Duration;
-            }
-        }
-
-        /// <summary>
-        /// Every time a row is added determine the context menu buttons needed based on its state and change the background color of the task.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void DgvTimesheet_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
             DataGridViewRow row = dgvTimesheet.Rows[e.RowIndex];
 
-            Task AddedTask = new Task();
-            AddedTask.Description = row.Cells["description"].Value.ToString();
-            AddedTask.BeginDate = DateTime.Parse(row.Cells["begindate"].Value.ToString());
-            AddedTask.EndDate = DateTime.Parse(row.Cells["enddate"].Value.ToString());
-            AddedTask.Status = (TaskStatus)(Enum.Parse(typeof(TaskStatus), row.Cells["status"].Value.ToString()));
-
-            // create context menu for each row
-            ContextMenuStrip taskContextMenu = new ContextMenuStrip();
-
-            taskContextMenu.Items.Add("Delete").Click += taskContextMenuDelete_Click;
-
-            switch (AddedTask.Status)
-            {
-                case TaskStatus.UNINVOICED:
-                    taskContextMenu.Items.Add("Mark as Invoiced").Click += markAsInvoiced;
-                    taskContextMenu.Items.Add("Mark as Paid").Click += markAsPaid;
-                    break;
-                case TaskStatus.INVOICED:
-                    taskContextMenu.Items.Add("Mark as Not Invoiced").Click += markAsNotInvoiced;
-                    taskContextMenu.Items.Add("Mark as Paid").Click += markAsPaid;
-                    break;
-                case TaskStatus.PAID:
-                    taskContextMenu.Items.Add("Mark as Not Invoiced").Click += markAsNotInvoiced;
-                    taskContextMenu.Items.Add("Mark as Invoiced").Click += markAsInvoiced;
-                    break;
-            }
-
-            row.ContextMenuStrip = taskContextMenu;
-
-            row.Cells["duration"].Value = AddedTask.Duration;
-
             DataGridViewCellStyle defaultStyle = new DataGridViewCellStyle();
-
-            // Changes color of cells based on if it has been invoiced or paid
-
             defaultStyle.ForeColor = Color.Black;
             defaultStyle.SelectionForeColor = Color.Black;
             dgvTimesheet.Rows[e.RowIndex].DefaultCellStyle = defaultStyle;
 
-            UpdateRowBackgroundColor(dgvTimesheet.Rows[e.RowIndex]);
+            refreshTaskValues(row);
         }
 
-        private void UpdateRowBackgroundColor(DataGridViewRow dataGridViewRow)
+        private void refreshTaskValues(DataGridViewRow row)
         {
-            dataGridViewRow.DefaultCellStyle.SelectionBackColor = dataGridViewRow.DefaultCellStyle.BackColor = getTaskColor((TaskStatus)Enum.Parse(typeof(TaskStatus), dataGridViewRow.Cells["status"].Value.ToString()));
+            Task AddedTask = new Task()
+            {
+                BeginDate = DateTime.Parse(row.Cells["begindate"].Value.ToString()),
+                EndDate = DateTime.Parse(row.Cells["enddate"].Value.ToString())
+            };
+
+            row.Cells["duration"].Value = AddedTask.Duration.ToString();
+
+            UpdateRowBackgroundColor(row);
+
+            setTaskContextMenu((TaskStatus)Enum.Parse(typeof(TaskStatus), row.Cells["status"].Value.ToString()), row);
         }
 
-        /// <summary>
-        /// Edit the cell value on doubleclick
-        /// </summary>
+        private void setTaskContextMenu(TaskStatus status, DataGridViewRow row)
+        {
+            switch (status)
+            {
+                case TaskStatus.UNINVOICED:
+                    row.ContextMenuStrip = cmUninvoiced;
+                    break;
+                case TaskStatus.INVOICED:
+                    row.ContextMenuStrip = cmInvoiced;
+                    break;
+                case TaskStatus.PAID:
+                    row.ContextMenuStrip = cmPaid;
+                    break;
+            }
+        }
+
+        private void UpdateRowBackgroundColor(DataGridViewRow row)
+        {
+            row.DefaultCellStyle.SelectionBackColor =
+                row.DefaultCellStyle.BackColor =
+                    getTaskColor( (TaskStatus) Enum.Parse( typeof(TaskStatus), row.Cells["status"].Value.ToString() ) );
+        }
+
         private void DgvTimesheet_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex > -1 && e.ColumnIndex > -1)
@@ -136,41 +132,36 @@ namespace timelord
 
                 string columnName = dgvTimesheet.Columns[e.ColumnIndex].Name;
 
+                DataGridViewRow row = dgvTimesheet.Rows[e.RowIndex];
+
                 if (columnName == "description")
                 {
-                    editor = new EditDescription(dgvTimesheet.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
+                    editor = new EditDescription(row.Cells[e.ColumnIndex].Value.ToString());
 
                     if (editor.ShowDialog() == DialogResult.OK)
                     {
-                        _table.Rows[e.RowIndex]["description"] = ((EditDescription)editor).getValue();
+                        _table.Rows.Find(row.Cells["id"].Value)["description"] = ((EditDescription)editor).getValue();
+
+                        timesheet.Commit(_table);
                     }
 
-                    timesheet.Commit(_table);
                 }
                 else if (columnName == "duration")
                 {
-                    editor = new EditTime(DateTime.Parse(_table.Rows[e.RowIndex]["enddate"].ToString()).Subtract(DateTime.Parse(_table.Rows[e.RowIndex]["begindate"].ToString())));
+                    editor = new EditTime(DateTime.Parse(_table.Rows.Find(row.Cells["id"].Value)["enddate"].ToString()).Subtract(DateTime.Parse(_table.Rows.Find(row.Cells["id"].Value)["begindate"].ToString())));
 
                     if (editor.ShowDialog() == DialogResult.OK)
                     {
-                        _table.Rows[e.RowIndex]["enddate"] = DateTime.Parse(_table.Rows[e.RowIndex]["begindate"].ToString()).Add(TimeSpan.Parse(((EditTime)editor).getValue().ToString()));
+                        _table.Rows[e.RowIndex]["enddate"] = DateTime.Parse(_table.Rows.Find(row.Cells["id"].Value)["begindate"].ToString()).Add(TimeSpan.Parse(((EditTime)editor).getValue().ToString()));
+
+                        timesheet.Commit(_table);
+
+                        refreshTaskValues(dgvTimesheet.Rows[e.RowIndex]);
                     }
-
-                    timesheet.Commit(_table);
-
-
-                    Task EditedTask = new Task();
-                    EditedTask.BeginDate = DateTime.Parse(dgvTimesheet.Rows[e.RowIndex].Cells["begindate"].Value.ToString());
-                    EditedTask.EndDate = DateTime.Parse(dgvTimesheet.Rows[e.RowIndex].Cells["enddate"].Value.ToString());
-                    dgvTimesheet.Rows[e.RowIndex].Cells["duration"].Value = EditedTask.Duration;
-
                 }
             }
         }
 
-        /// <summary>
-        /// Selects the cell you right click on
-        /// </summary>
         private void DgvTimesheet_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
             if(e.RowIndex != -1)
@@ -182,10 +173,6 @@ namespace timelord
             }
         }
 
-
-        /// <summary>
-        /// Toggle the font weight of the selected row
-        /// </summary>
         private void DgvTimesheet_SelectionChanged(object sender, EventArgs e)
         {
             if (dgvTimesheet.SelectedRows.Count > 0)
@@ -209,25 +196,16 @@ namespace timelord
             }
         }
 
-        /// <summary>
-        /// When the form is closed, close the database connection
-        /// </summary>
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
             DisableTimesheet();
         }
 
-        /// <summary>
-        /// Select all of the text of the task name box when focused
-        /// </summary>
         private void TxtTaskName_GotFocus(object sender, EventArgs e)
         {
             txtTaskName.SelectAll();
         }
 
-        /// <summary>
-        /// Opens a FileDialog to open an existing timesheet
-        /// </summary>
         private void OpenTimesheet_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileBrowser = new OpenFileDialog()
@@ -253,9 +231,6 @@ namespace timelord
             }
         }
 
-        /// <summary>
-        /// Opens a create timesheet dialog and creates a new timesheet
-        /// </summary>
         private void NewTimesheet_Click(object sender, EventArgs e)
         {
             SaveFileDialog fileBrowser = new SaveFileDialog();
@@ -270,18 +245,11 @@ namespace timelord
             }
         }
 
-        /// <summary>
-        /// Closes the timesheet 
-        /// </summary>
         private void CloseTimesheet_Click(object sender, EventArgs e)
         {
             DisableTimesheet();
         }
 
-
-        /// <summary>
-        /// A right click context menu event for each task in the dgv
-        /// </summary>
         private void taskContextMenuDelete_Click(object sender, EventArgs e)
         {
             string message = string.Format("Are you sure you want to delete {0} task(s)?", dgvTimesheet.SelectedRows.Count);
@@ -291,14 +259,13 @@ namespace timelord
             {
                 foreach (DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
                 {
-                    _table.Rows[selectedRow.Index].Delete();
+                    _table.Rows.Find(selectedRow.Cells["id"].Value).Delete();
                 }
+
+                timesheet.Commit(_table);
             }
         }
 
-        /// <summary>
-        /// Starts the task timer
-        /// </summary>
         private void ToggleTask_Click(object sender, EventArgs e)
         {
             if (!timerState)
@@ -324,20 +291,12 @@ namespace timelord
             }
         }
 
-
-        /// <summary>
-        /// Adds one second to the task timer
-        /// </summary>
         private void Timer_Tick(object sender, EventArgs e)
         {
             time++;
             setTimerText(time);
         }
 
-
-        /// <summary>
-        /// Clears the current task if one exists
-        /// </summary>
         private void ClearTask_Click(object sender, EventArgs e)
         {
             if (DialogResult.Yes == MessageBox.Show("Are you sure you want to clear the task?", "Clear Time", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1))
@@ -351,9 +310,6 @@ namespace timelord
             }
         }
 
-        /// <summary>
-        /// Add a row to the database when the user clicks save
-        /// </summary>
         private void SaveTask_Click(object sender, EventArgs e)
         {
             ActiveTask.Description = txtTaskName.Text;
@@ -369,8 +325,6 @@ namespace timelord
             _table.Rows.Add(row);
 
             timesheet.Commit(_table);
-
-            _table = timesheet.Tasks();
 
             ActiveTask = new Task();
             time = 0;
@@ -458,9 +412,6 @@ namespace timelord
             this.FormClosed += FrmMain_FormClosed;
         }
 
-        /// <summary>
-        /// Close a timesheet to open a new one
-        /// </summary>
         private void DisableTimesheet()
         {
             if (timesheet != null)
@@ -481,64 +432,38 @@ namespace timelord
             setTimerText(0);
         }
 
-
-        /// <summary>
-        /// Changes the item to uninvoiced in the database
-        /// </summary>
         private void markAsNotInvoiced(object sender, EventArgs e)
         {
             changeSelectedTaskStatus(TaskStatus.UNINVOICED);
         }
 
-
-        /// <summary>
-        /// Changes the item to invoiced in the database
-        /// </summary>
         private void markAsInvoiced(object sender, EventArgs e)
         {
             changeSelectedTaskStatus(TaskStatus.INVOICED);
         }
 
-        /// <summary>
-        /// Changes the item to paid in the database
-        /// </summary>
         private void markAsPaid(object sender, EventArgs e)
         {
             changeSelectedTaskStatus(TaskStatus.PAID);
         }
 
-
-        /// <summary>
-        /// Changes the states of the selected tasks
-        /// </summary>
-        /// <param name="state">The state</param>
         private void changeSelectedTaskStatus(TaskStatus state)
         {
             foreach (DataGridViewRow selectedRow in dgvTimesheet.SelectedRows)
             {
-                _table.Rows[selectedRow.Index]["status"] = state.ToString();
+                _table.Rows.Find(selectedRow.Cells["id"].Value)["status"] = state.ToString();
+
+                refreshTaskValues(dgvTimesheet.Rows[selectedRow.Index]);
             }
 
             timesheet.Commit(_table);
-
-            _table = timesheet.Tasks();
         }
 
-
-        /// <summary>
-        /// Set the text of the timer
-        /// </summary>
-        /// <param name="time">The time in seconds to set it to</param>
         private void setTimerText(int timeInSeconds)
         {
             lblTaskDuration.Text = TimeSpan.FromSeconds(timeInSeconds).ToString();
         }
 
-        /// <summary>
-        /// Determines if the file path is a Format 3 SQLite Database
-        /// </summary>
-        /// <param name="pathToFile">A string leading to a file</param>
-        /// <returns></returns>
         public static bool isSQLiteDatabase(string pathToFile)
         {
             bool result = false;
@@ -563,12 +488,6 @@ namespace timelord
             return result;
         }
 
-
-        /// <summary>
-        /// Get the color the task should be set to
-        /// </summary>
-        /// <param name="status">The status code 0 for unbilled, 1 for billed, 2 for paid</param>
-        /// <returns>The color associated with the status</returns>
         public Color getTaskColor(TaskStatus status)
         {
             Color backgroundColor = new Color();

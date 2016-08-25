@@ -29,8 +29,8 @@ namespace timelord
         public Task()
         {
             this.Description = string.Empty;
-            this.BeginDate = new DateTime();
-            this.EndDate = new DateTime();
+            this.BeginDate = DateTime.MinValue;
+            this.EndDate = DateTime.MinValue;
             this.Status = TaskStatus.UNINVOICED;
         }
     }
