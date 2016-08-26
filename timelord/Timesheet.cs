@@ -80,9 +80,9 @@ namespace timelord
             });
         }
 
-        public long Commit(DataTable d)
+        public void Commit(DataTable d)
         {
-            return ExecuteFunction(c =>{
+            ExecuteAction(c =>{
 
                 using (SQLiteDataAdapter a = new SQLiteDataAdapter(selectTaskQuery, c))
                 {
@@ -95,8 +95,6 @@ namespace timelord
                         a.RowUpdated += DataAdapter_RowUpdated;
 
                         a.Update(d);
-
-                        return c.LastInsertRowId;
                     }
                 }
             });
