@@ -1,6 +1,8 @@
 ﻿using System.Data;
 using System.Data.SQLite;
 using System;
+using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace timelord
 {
@@ -31,7 +33,6 @@ namespace timelord
             using (SQLiteConnection c = GetConnection())
             {
                 c.Open();
-
                 action(c);
             }
         }
@@ -41,27 +42,17 @@ namespace timelord
             using (SQLiteConnection c = GetConnection())
             {
                 c.Open();
-
                 return function(c);
             }
         }
 
-        private T ExecuteCommand<T>(Func<SQLiteDataAdapter, T> function)
+        private void DataAdapter_RowUpdated(object sender, System.Data.Common.RowUpdatedEventArgs e)
         {
-            return ExecuteFunction(c =>
+            if (e.Status == UpdateStatus.Continue && e.StatementType == StatementType.Insert)
             {
-                using (SQLiteDataAdapter a = new SQLiteDataAdapter(selectTaskQuery, c))
-                {
-                    using (SQLiteCommandBuilder b = new SQLiteCommandBuilder(a))
-                    {
-                        a.UpdateCommand = b.GetUpdateCommand();
-                        a.DeleteCommand = b.GetDeleteCommand();
-                        a.InsertCommand = b.GetInsertCommand();
-
-                        return function(a);
-                    }
-                }
-            });
+                e.Row["id"] = ( (SQLiteConnection) e.Command.Connection).LastInsertRowId;
+                e.Row.AcceptChanges();
+            }
         }
 
         private void CreateSchema(SQLiteConnection c)
@@ -75,22 +66,39 @@ namespace timelord
 
         public DataTable Tasks()
         {
-            return ExecuteCommand(a =>
+            return ExecuteFunction(c =>
             {
-                DataTable d = new DataTable("task");
+                using (SQLiteDataAdapter a = new SQLiteDataAdapter(selectTaskQuery, c))
+                {
+                    DataTable d = new DataTable("task");
+                    a.Fill(d);
+                    d.Columns["id"].AllowDBNull = true;
+                    d.PrimaryKey = new DataColumn[] { d.Columns["id"] };
+                    return d;
+                }
 
-                a.Fill(d);
-                d.PrimaryKey = new DataColumn[] { d.Columns["id"] };
-                d.Columns["id"].AutoIncrement = true;
-
-                return d;
             });
         }
 
-        public int Commit(DataTable d)
+        public long Commit(DataTable d)
         {
-            return ExecuteCommand(a =>{
-                return a.Update(d);
+            return ExecuteFunction(c =>{
+
+                using (SQLiteDataAdapter a = new SQLiteDataAdapter(selectTaskQuery, c))
+                {
+                    using (SQLiteCommandBuilder b = new SQLiteCommandBuilder(a))
+                    {
+                        a.UpdateCommand = b.GetUpdateCommand();
+                        a.DeleteCommand = b.GetDeleteCommand();
+                        a.InsertCommand = b.GetInsertCommand();
+
+                        a.RowUpdated += DataAdapter_RowUpdated;
+
+                        a.Update(d);
+
+                        return c.LastInsertRowId;
+                    }
+                }
             });
         }
 
