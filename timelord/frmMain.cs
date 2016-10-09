@@ -3,12 +3,10 @@ using System.Data;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
+using System.Diagnostics;
 
 namespace timelord
 {
-    /// <summary>
-    /// the main time tracking form
-    /// </summary>
     public partial class frmMain : Form
     {
         Timesheet timesheet;
@@ -21,10 +19,8 @@ namespace timelord
         ContextMenuStrip cmUninvoiced;
         ContextMenuStrip cmInvoiced;
         ContextMenuStrip cmPaid;
+        DataGridViewCellStyle defaultStyle;
 
-        /// <summary>
-        /// sets up the form
-        /// </summary>
         public frmMain()
         {
             InitializeComponent();
@@ -33,12 +29,15 @@ namespace timelord
             this.MinimizeBox = true;
             dgvTimesheet.AutoGenerateColumns = false;
 
+            defaultStyle = new DataGridViewCellStyle();
+            defaultStyle.ForeColor = Color.Black;
+            defaultStyle.SelectionForeColor = Color.Black;
+
             txtTaskName.GotFocus += TxtTaskName_GotFocus;
             dgvTimesheet.SelectionChanged += DgvTimesheet_SelectionChanged;
             dgvTimesheet.CellMouseDown += DgvTimesheet_CellMouseDown;
             dgvTimesheet.RowsAdded += DgvTimesheet_RowsAdded;
 
-            // initialize a timer for counting seconds
             timer = new Timer();
             timer.Tick += Timer_Tick;
             timer.Interval = 1000;
@@ -76,14 +75,12 @@ namespace timelord
 
         private void DgvTimesheet_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
-            DataGridViewRow row = dgvTimesheet.Rows[e.RowIndex];
-
-            DataGridViewCellStyle defaultStyle = new DataGridViewCellStyle();
-            defaultStyle.ForeColor = Color.Black;
-            defaultStyle.SelectionForeColor = Color.Black;
-            dgvTimesheet.Rows[e.RowIndex].DefaultCellStyle = defaultStyle;
-
-            refreshTaskValues(row);
+            for(int i = e.RowIndex; i < dgvTimesheet.Rows.Count; i++)
+            {
+                DataGridViewRow row = dgvTimesheet.Rows[i];
+                row.DefaultCellStyle = defaultStyle.Clone();
+                refreshTaskValues(row);
+            }
         }
 
         private void refreshTaskValues(DataGridViewRow row)
@@ -121,7 +118,7 @@ namespace timelord
         {
             row.DefaultCellStyle.SelectionBackColor =
                 row.DefaultCellStyle.BackColor =
-                    getTaskColor( (TaskStatus) Enum.Parse( typeof(TaskStatus), row.Cells["status"].Value.ToString() ) );
+                    getTaskColor((TaskStatus)Enum.Parse(typeof(TaskStatus), row.Cells["status"].Value.ToString()));
         }
 
         private void DgvTimesheet_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -164,9 +161,9 @@ namespace timelord
 
         private void DgvTimesheet_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
-            if(e.RowIndex != -1)
+            if (e.RowIndex != -1)
             {
-                if(e.Button == MouseButtons.Right)
+                if (e.Button == MouseButtons.Right)
                 {
                     dgvTimesheet.Rows[e.RowIndex].Selected = true;
                 }
@@ -189,7 +186,8 @@ namespace timelord
                 if (row.Selected)
                 {
                     row.DefaultCellStyle.Font = new Font(dgvTimesheet.Font, FontStyle.Bold);
-                }else
+                }
+                else
                 {
                     row.DefaultCellStyle.Font = new Font(dgvTimesheet.Font, FontStyle.Regular);
                 }
@@ -276,7 +274,7 @@ namespace timelord
                 btnTaskClear.Enabled = false;
                 timerState = true;
 
-                if(ActiveTask.BeginDate == DateTime.MinValue)
+                if (ActiveTask.BeginDate == DateTime.MinValue)
                 {
                     ActiveTask.BeginDate = DateTime.Now;
                 }
@@ -362,7 +360,7 @@ namespace timelord
             {
                 Name = "duration",
                 HeaderText = "Duration",
-                Visible = true            
+                Visible = true
             });
 
             dgvTimesheet.Columns.Add(new DataGridViewTextBoxColumn()
@@ -470,7 +468,8 @@ namespace timelord
         {
             bool result = false;
 
-            if (File.Exists(pathToFile)) {
+            if (File.Exists(pathToFile))
+            {
 
                 using (FileStream stream = new FileStream(pathToFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
@@ -482,8 +481,6 @@ namespace timelord
                     }
 
                     result = System.Text.Encoding.UTF8.GetString(header).Contains("SQLite format 3");
-
-                    stream.Close();
                 }
             }
 

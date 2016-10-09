@@ -15,7 +15,6 @@ namespace timelord
         private const string createTaskTable = "CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, begindate TEXT, enddate TEXT, status TEXT)";
         private const string selectTaskQuery = "SELECT id,description,begindate,enddate,status FROM task";
 
-
         public Timesheet(string filePath)
         {
             this._filePath = filePath;
@@ -25,9 +24,13 @@ namespace timelord
 
         private SQLiteConnection GetConnection()
         {
-            return new SQLiteConnection("Data Source=" + this._filePath + ";Version=3;");
+            return new SQLiteConnection("Data Source=" + _filePath + ";Version=3;");
         }
 
+        /// <summary>
+        /// This method executes and passes a <c>SQLiteConnection</c> to a void method.
+        /// </summary>
+        /// <param name="action">The function to execute.</param>
         private void ExecuteAction(Action<SQLiteConnection> action)
         {
             using (SQLiteConnection c = GetConnection())
@@ -37,21 +40,18 @@ namespace timelord
             }
         }
 
+        /// <summary>
+        /// This method executes and passes a <c>SQLiteConnection</c> to a generic method.
+        /// </summary>
+        /// <typeparam name="T">The generic DataType to return from the function.</typeparam>
+        /// <param name="function">The function to execute.</param>
+        /// <returns></returns>
         private T ExecuteFunction<T>(Func<SQLiteConnection,T> function)
         {
             using (SQLiteConnection c = GetConnection())
             {
                 c.Open();
                 return function(c);
-            }
-        }
-
-        private void DataAdapter_RowUpdated(object sender, System.Data.Common.RowUpdatedEventArgs e)
-        {
-            if (e.Status == UpdateStatus.Continue && e.StatementType == StatementType.Insert)
-            {
-                e.Row["id"] = ( (SQLiteConnection) e.Command.Connection).LastInsertRowId;
-                e.Row.AcceptChanges();
             }
         }
 
@@ -64,6 +64,10 @@ namespace timelord
             }
         }
 
+        /// <summary>
+        /// Returns 
+        /// </summary>
+        /// <returns></returns>
         public DataTable Tasks()
         {
             return ExecuteFunction(c =>
@@ -72,7 +76,7 @@ namespace timelord
                 {
                     DataTable d = new DataTable("task");
                     a.Fill(d);
-                    d.Columns["id"].AllowDBNull = true;
+                    //d.Columns["id"].AllowDBNull = true;
                     d.PrimaryKey = new DataColumn[] { d.Columns["id"] };
                     return d;
                 }
@@ -80,8 +84,13 @@ namespace timelord
             });
         }
 
+        /// <summary>
+        /// Commits a datatable to the sqlite database
+        /// </summary>
+        /// <param name="d">The datatable to commit</param>
         public void Commit(DataTable d)
         {
+            // Execute a void action that needs a database connection
             ExecuteAction(c =>{
 
                 using (SQLiteDataAdapter a = new SQLiteDataAdapter(selectTaskQuery, c))
@@ -98,6 +107,15 @@ namespace timelord
                     }
                 }
             });
+        }
+
+        private void DataAdapter_RowUpdated(object sender, System.Data.Common.RowUpdatedEventArgs e)
+        {
+            if (e.Status == UpdateStatus.Continue && e.StatementType == StatementType.Insert)
+            {
+                e.Row["id"] = ( (SQLiteConnection) e.Command.Connection).LastInsertRowId;
+                e.Row.AcceptChanges();
+            }
         }
 
     }

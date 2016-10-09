@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.msMain = new System.Windows.Forms.MenuStrip();
             this.mnuTimesheet = new System.Windows.Forms.ToolStripMenuItem();
@@ -99,11 +98,12 @@
             this.mnuInvoice.Name = "mnuInvoice";
             this.mnuInvoice.Size = new System.Drawing.Size(57, 20);
             this.mnuInvoice.Text = "Invoice";
+            this.mnuInvoice.Visible = false;
             // 
             // mnuInvoiceCreate
             // 
             this.mnuInvoiceCreate.Name = "mnuInvoiceCreate";
-            this.mnuInvoiceCreate.Size = new System.Drawing.Size(108, 22);
+            this.mnuInvoiceCreate.Size = new System.Drawing.Size(152, 22);
             this.mnuInvoiceCreate.Text = "Create";
             // 
             // dgvTimesheet
@@ -114,20 +114,12 @@
             this.dgvTimesheet.AllowUserToResizeRows = false;
             this.dgvTimesheet.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvTimesheet.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvTimesheet.DefaultCellStyle = dataGridViewCellStyle1;
             this.dgvTimesheet.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-            this.dgvTimesheet.Location = new System.Drawing.Point(0, 67);
+            this.dgvTimesheet.Location = new System.Drawing.Point(0, 72);
             this.dgvTimesheet.Name = "dgvTimesheet";
             this.dgvTimesheet.RowHeadersVisible = false;
             this.dgvTimesheet.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvTimesheet.Size = new System.Drawing.Size(923, 571);
+            this.dgvTimesheet.Size = new System.Drawing.Size(923, 502);
             this.dgvTimesheet.TabIndex = 1;
             // 
             // txtTaskName
@@ -139,12 +131,12 @@
             this.txtTaskName.Size = new System.Drawing.Size(271, 20);
             this.txtTaskName.TabIndex = 2;
             // 
-            // btnTaskStart
+            // btnTaskToggle
             // 
             this.btnTaskToggle.Enabled = false;
             this.btnTaskToggle.ImageAlign = System.Drawing.ContentAlignment.TopRight;
             this.btnTaskToggle.Location = new System.Drawing.Point(440, 39);
-            this.btnTaskToggle.Name = "btnTaskStart";
+            this.btnTaskToggle.Name = "btnTaskToggle";
             this.btnTaskToggle.Size = new System.Drawing.Size(75, 23);
             this.btnTaskToggle.TabIndex = 3;
             this.btnTaskToggle.Text = "Start";
@@ -197,7 +189,9 @@
             this.AcceptButton = this.btnTaskToggle;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(923, 639);
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
+            this.ClientSize = new System.Drawing.Size(923, 570);
             this.Controls.Add(this.btnTaskSave);
             this.Controls.Add(this.btnTaskClear);
             this.Controls.Add(this.lblTaskDuration);
@@ -206,11 +200,15 @@
             this.Controls.Add(this.txtTaskName);
             this.Controls.Add(this.dgvTimesheet);
             this.Controls.Add(this.msMain);
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.msMain;
+            this.MaximizeBox = false;
             this.Name = "frmMain";
             this.ShowIcon = false;
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Timelord";
             this.msMain.ResumeLayout(false);
             this.msMain.PerformLayout();
