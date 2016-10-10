@@ -3,28 +3,34 @@ using System.Data.SQLite;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace timelord
 {
     /// <summary>
     /// Manages the tasks database
     /// </summary>
-    class Timesheet
+    class SQLiteInstance
     {
-        private readonly string _filePath;
-        private const string createTaskTable = "CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, begindate TEXT, enddate TEXT, status TEXT)";
-        private const string selectTaskQuery = "SELECT id,description,begindate,enddate,status FROM task";
+        private readonly string PathToDatabase;
 
-        public Timesheet(string filePath)
+        public SQLiteInstance(string pathToDatabase, List<string> createQueries)
         {
-            this._filePath = filePath;
+            this.PathToDatabase = pathToDatabase;
 
-            ExecuteAction(c => CreateSchema(c));
-        }
+            // Execute each create query
+            ExecuteAction(c =>
+            {
+                foreach(string createQuery in createQueries)
+                {
+                    ExecuteVoidStatement(c, createQuery);
+                }
+            });
+    }
 
         private SQLiteConnection GetConnection()
         {
-            return new SQLiteConnection("Data Source=" + _filePath + ";Version=3;");
+            return new SQLiteConnection("Data Source=" + PathToDatabase + ";Version=3;");
         }
 
         /// <summary>
@@ -55,26 +61,26 @@ namespace timelord
             }
         }
 
-        private void CreateSchema(SQLiteConnection c)
+        private void ExecuteVoidStatement(SQLiteConnection c, string databaseCreateQuery)
         {
             using (SQLiteCommand cmd = c.CreateCommand())
             {
-                cmd.CommandText = createTaskTable;
+                cmd.CommandText = databaseCreateQuery;
                 cmd.ExecuteNonQuery();
             }
         }
 
         /// <summary>
-        /// Returns 
+        /// Gets a standard SQLite table assuming it has a primary key of id 
         /// </summary>
-        /// <returns></returns>
-        public DataTable Tasks()
+        /// <returns>A datatable containing the table from the SQLite database.</returns>
+        public DataTable GetTable(string tableName, string selectTaskQuery)
         {
             return ExecuteFunction(c =>
             {
                 using (SQLiteDataAdapter a = new SQLiteDataAdapter(selectTaskQuery, c))
                 {
-                    DataTable d = new DataTable("task");
+                    DataTable d = new DataTable(tableName);
                     a.Fill(d);
                     //d.Columns["id"].AllowDBNull = true;
                     d.PrimaryKey = new DataColumn[] { d.Columns["id"] };
@@ -88,7 +94,7 @@ namespace timelord
         /// Commits a datatable to the sqlite database
         /// </summary>
         /// <param name="d">The datatable to commit</param>
-        public void Commit(DataTable d)
+        public void Commit(DataTable d, string selectTaskQuery)
         {
             // Execute a void action that needs a database connection
             ExecuteAction(c =>{

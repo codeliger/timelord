@@ -98,7 +98,6 @@
             this.mnuInvoice.Name = "mnuInvoice";
             this.mnuInvoice.Size = new System.Drawing.Size(57, 20);
             this.mnuInvoice.Text = "Invoice";
-            this.mnuInvoice.Visible = false;
             // 
             // mnuInvoiceCreate
             // 

@@ -108,6 +108,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="QueryString.cs" />
     <Compile Include="EditMaster.cs">
       <SubType>Form</SubType>
     </Compile>

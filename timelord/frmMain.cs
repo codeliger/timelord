@@ -4,12 +4,13 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace timelord
 {
     public partial class frmMain : Form
     {
-        Timesheet timesheet;
+        SQLiteInstance timesheet;
         Timer timer;
         int time;
         bool timerState = false;
@@ -20,6 +21,7 @@ namespace timelord
         ContextMenuStrip cmInvoiced;
         ContextMenuStrip cmPaid;
         DataGridViewCellStyle defaultStyle;
+        List<string> createQueries;
 
         public frmMain()
         {
@@ -48,6 +50,13 @@ namespace timelord
             CreateContextMenuStrips();
 
             dgvTimesheet.CellDoubleClick += DgvTimesheet_CellDoubleClick;
+
+            createQueries = new List<string>();
+            createQueries.Add(QueryString.Task.Create);
+            createQueries.Add(QueryString.Client.Create);
+            createQueries.Add(QueryString.Invoice.Create);
+            createQueries.Add(QueryString.InvoiceTask.Create);
+            createQueries.Add(QueryString.Identity.Create);
         }
 
         private void CreateContextMenuStrips()
@@ -139,7 +148,7 @@ namespace timelord
                     {
                         _table.Rows.Find(row.Cells["id"].Value)["description"] = ((EditDescription)editor).getValue();
 
-                        timesheet.Commit(_table);
+                        timesheet.Commit(_table, QueryString.Task.Select);
                     }
 
                 }
@@ -151,7 +160,7 @@ namespace timelord
                     {
                         _table.Rows[e.RowIndex]["enddate"] = DateTime.Parse(_table.Rows.Find(row.Cells["id"].Value)["begindate"].ToString()).Add(TimeSpan.Parse(((EditTime)editor).getValue().ToString()));
 
-                        timesheet.Commit(_table);
+                        timesheet.Commit(_table, QueryString.Task.Select);
 
                         refreshTaskValues(dgvTimesheet.Rows[e.RowIndex]);
                     }
@@ -219,7 +228,7 @@ namespace timelord
             if (result.Equals(DialogResult.OK) && isSQLiteDatabase(fileBrowser.FileName))
             {
                 DisableTimesheet();
-                timesheet = new Timesheet(fileBrowser.FileName);
+                timesheet = new SQLiteInstance(fileBrowser.FileName, createQueries);
 
                 EnableTimesheet();
             }
@@ -238,7 +247,7 @@ namespace timelord
 
             if (fileBrowser.ShowDialog() == DialogResult.OK)
             {
-                timesheet = new Timesheet(fileBrowser.FileName);
+                timesheet = new SQLiteInstance(fileBrowser.FileName, createQueries);
                 EnableTimesheet();
             }
         }
@@ -260,7 +269,7 @@ namespace timelord
                     _table.Rows.Find(selectedRow.Cells["id"].Value).Delete();
                 }
 
-                timesheet.Commit(_table);
+                timesheet.Commit(_table, QueryString.Task.Select);
             }
         }
 
@@ -324,7 +333,7 @@ namespace timelord
 
             _table.Rows.Add(row);
 
-            timesheet.Commit(_table);
+            timesheet.Commit(_table, QueryString.Task.Select);
 
             ActiveTask = new Task();
             time = 0;
@@ -403,7 +412,7 @@ namespace timelord
 
             source = new BindingSource();
 
-            _table = timesheet.Tasks();
+            _table = timesheet.GetTable("tasks", QueryString.Task.Select);
 
             source.DataSource = _table;
 
@@ -456,7 +465,7 @@ namespace timelord
                 refreshTaskValues(dgvTimesheet.Rows[selectedRow.Index]);
             }
 
-            timesheet.Commit(_table);
+            timesheet.Commit(_table, QueryString.Task.Select);
         }
 
         private void setTimerText(int timeInSeconds)
