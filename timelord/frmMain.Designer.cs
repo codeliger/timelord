@@ -104,6 +104,7 @@
             this.mnuInvoiceCreate.Name = "mnuInvoiceCreate";
             this.mnuInvoiceCreate.Size = new System.Drawing.Size(152, 22);
             this.mnuInvoiceCreate.Text = "Create";
+            this.mnuInvoiceCreate.Click += new System.EventHandler(this.mnuInvoiceCreate_Click);
             // 
             // dgvTimesheet
             // 

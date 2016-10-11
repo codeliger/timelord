@@ -322,8 +322,6 @@ namespace timelord
             ActiveTask.Description = txtTaskName.Text;
             ActiveTask.EndDate = ActiveTask.BeginDate.Add(TimeSpan.FromSeconds(time));
 
-            _table.Columns["id"].AllowDBNull = true;
-
             DataRow row = _table.NewRow();
 
             row["description"] = ActiveTask.Description;
@@ -520,5 +518,10 @@ namespace timelord
         }
 
         #endregion
+
+        private void mnuInvoiceCreate_Click(object sender, EventArgs e)
+        {
+            new frmInvoice(timesheet, dgvTimesheet.SelectedRows).ShowDialog();
+        }
     }
 }
