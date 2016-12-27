@@ -15,14 +15,14 @@ namespace timelord
         }
         public static class Client
         {
-            public const string Create = "CREATE TABLE IF NOT EXISTS client ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, address TEXT, phone TEXT, email TEXT, date_created TEXT)";
-            public const string Select = "SELECT id,name,address,phone,email,date_created FROM Client";
+            public const string Create = "CREATE TABLE IF NOT EXISTS client ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, address TEXT, phone TEXT, email TEXT, date_created TEXT, hourly_rate REAL)";
+            public const string Select = "SELECT id,name,address,phone,email,date_created,hourly_rate FROM Client";
         }
 
         public static class Identity
         {
-            public const string Create = "CREATE TABLE IF NOT EXISTS identity ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, address TEXT, phone TEXT, email TEXT, date_created TEXT)";
-            public const string Select = "SELECT id,name,address,phone,email,date_created FROM Identity";
+            public const string Create = "CREATE TABLE IF NOT EXISTS identity ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, address TEXT, phone TEXT, email TEXT, date_created TEXT, hourly_rate REAL)";
+            public const string Select = "SELECT id,name,address,phone,email,date_created,hourly_rate FROM Identity";
         }
 
         public static class Invoice

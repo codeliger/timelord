@@ -2,35 +2,28 @@
 using System.Data;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace timelord
 {
+
+    /// <summary>
+    /// Prepares tasks inside of a data grid view
+    /// This data will then be used to generate an invoice
+    /// </summary>
     public partial class frmInvoice : Form
     {
         private SQLiteInstance Db;
-        private DataGridViewSelectedRowCollection Tasks;
+        private List<Task> Tasks = new List<Task>();
         private DataTable Identities;
         private DataTable Clients;
         private frmClient Client;
 
-        public frmInvoice(SQLiteInstance db, DataGridViewSelectedRowCollection tasks)
+        public frmInvoice(SQLiteInstance db, DataGridViewSelectedRowCollection dgTasks)
         {
             InitializeComponent();
 
             this.Db = db;
-            this.Tasks = tasks;
-
-            cbClient.SelectedIndexChanged += CbClient_SelectedIndexChanged;
-            cbIdentity.SelectedIndexChanged += CbIdentity_SelectedIndexChanged;
-
-            GetIdentities();
-            GetClients();
-
-            cbIdentity.DataSource = Identities;
-            cbIdentity.DisplayMember = "Name";
-
-            cbClient.DataSource = Clients;
-            cbClient.DisplayMember = "Name";
 
             btnClientEdit.Enabled = false;
             btnClientDelete.Enabled = false;
@@ -40,10 +33,35 @@ namespace timelord
             btnIdentityDelete.Enabled = false;
             btnIdentityNew.Enabled = true;
 
-            /// bind task stuff
+            cbClient.SelectedIndexChanged += CbClient_SelectedIndexChanged;
+            cbIdentity.SelectedIndexChanged += CbIdentity_SelectedIndexChanged;
+
+
+
+            GetIdentities();
+            GetClients();
+
+            // Keep a synchronized list of tasks with extended properties between the datagrid view and database
+            foreach (DataGridViewRow dgTask in dgTasks)
+            {
+                Task temporaryTask = new Task();
+
+                temporaryTask.Id = (Int64) dgTask.Cells["id"].Value;
+                temporaryTask.Description = dgTask.Cells["description"].Value.ToString();
+                temporaryTask.BeginDate = DateTime.Parse(dgTask.Cells["begindate"].Value.ToString());
+                temporaryTask.EndDate = DateTime.Parse(dgTask.Cells["enddate"].Value.ToString());
+
+                // add to task list
+                Tasks.Add(temporaryTask);
+            }
+
+            dgvInvoice.DataSource = Tasks;
 
         }
 
+        /// <summary>
+        /// Changes the state of comboboxes if there values or not
+        /// </summary>
         private void CbIdentity_SelectedIndexChanged(object sender, EventArgs e)
         {
             if(cbIdentity.SelectedIndex > -1)
@@ -73,20 +91,24 @@ namespace timelord
         public void GetIdentities()
         {
             Identities = Db.GetTable("Identity", QueryString.Identity.Select);
+            cbIdentity.DataSource = null;
+            cbIdentity.DataSource = Identities;
+            cbIdentity.DisplayMember = "Name";
         }
 
         public void GetClients()
         {
             Clients = Db.GetTable("Client", QueryString.Client.Select);
-
+            cbClient.DataSource = null;
+            cbClient.DataSource = Clients;
+            cbClient.DisplayMember = "Name";
         }
 
         private void btnIdentityEdit_Click(object sender, EventArgs e)
         {
-            if (cbClient.SelectedIndex > -1)
+            if (cbIdentity.SelectedIndex > -1)
             {
-                Client = new frmClient(Db, Identities, (DataRowView)cbIdentity.SelectedItem, QueryString.Identity.Select);
-
+                Client = new frmClient(Db, Identities, (DataRowView) cbIdentity.SelectedItem, QueryString.Identity.Select);
                 Client.ShowDialog();
                 GetIdentities();
             }
@@ -97,37 +119,23 @@ namespace timelord
             if (cbClient.SelectedIndex > -1)
             {
                 Client = new frmClient(Db, Clients, (DataRowView)cbClient.SelectedItem, QueryString.Client.Select);
-                Client.FormClosing += Client_FormClosing;
                 Client.ShowDialog();
+                GetClients();
             }
         }
 
         private void btnIdentityNew_Click(object sender, EventArgs e)
         {
             Client = new frmClient(Db, Identities, QueryString.Identity.Select);
-            Client.FormClosing += Identity_FormClosing;
             Client.ShowDialog();
             GetIdentities();
         }
 
         private void btnClientNew_Click(object sender, EventArgs e)
         {
-            Client = new frmClient(Db, Clients, QueryString.Client.Select);
-            Client.FormClosing += Client_FormClosing;
+            Client = new frmClient(Db, Clients, QueryString.Client.Select, (DataRowView)cbIdentity.SelectedItem);
             Client.ShowDialog();
             GetClients();
-        }
-
-        private void Identity_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            GetIdentities();
-            cbClient.Refresh();
-        }
-
-        private void Client_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            GetClients();
-            cbClient.Refresh();
         }
 
         private void btnIdentityDelete_Click(object sender, EventArgs e)
@@ -137,7 +145,6 @@ namespace timelord
                 Identities.Rows.Find(((DataRowView)cbIdentity.SelectedValue)["id"]).Delete();
                 Db.Commit(Identities, QueryString.Identity.Select);
                 GetIdentities();
-                cbIdentity.Refresh();
             }
         }
 
@@ -148,7 +155,6 @@ namespace timelord
                 Clients.Rows.Find(((DataRowView)cbClient.SelectedValue)["id"]).Delete();
                 Db.Commit(Clients, QueryString.Client.Select);
                 GetClients();
-                cbClient.Refresh();
             }
         }
     }

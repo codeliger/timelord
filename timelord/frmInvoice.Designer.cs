@@ -42,6 +42,10 @@
             this.btnPath = new System.Windows.Forms.Button();
             this.btnIdentityDelete = new System.Windows.Forms.Button();
             this.btnClientDelete = new System.Windows.Forms.Button();
+            this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.duration = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dgvInvoice)).BeginInit();
             this.SuspendLayout();
             // 
@@ -123,7 +127,14 @@
             // 
             // dgvInvoice
             // 
+            this.dgvInvoice.AllowUserToAddRows = false;
+            this.dgvInvoice.AllowUserToDeleteRows = false;
             this.dgvInvoice.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvInvoice.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.id,
+            this.cost,
+            this.description,
+            this.duration});
             this.dgvInvoice.Location = new System.Drawing.Point(15, 74);
             this.dgvInvoice.Name = "dgvInvoice";
             this.dgvInvoice.Size = new System.Drawing.Size(493, 355);
@@ -174,6 +185,31 @@
             this.btnClientDelete.UseVisualStyleBackColor = true;
             this.btnClientDelete.Click += new System.EventHandler(this.btnClientDelete_Click);
             // 
+            // id
+            // 
+            this.id.DataPropertyName = "id";
+            this.id.HeaderText = "ID";
+            this.id.Name = "id";
+            this.id.Visible = false;
+            // 
+            // cost
+            // 
+            this.cost.DataPropertyName = "cost";
+            this.cost.HeaderText = "Hourly Cost";
+            this.cost.Name = "cost";
+            // 
+            // description
+            // 
+            this.description.DataPropertyName = "description";
+            this.description.HeaderText = "Description";
+            this.description.Name = "description";
+            // 
+            // duration
+            // 
+            this.duration.DataPropertyName = "duration";
+            this.duration.HeaderText = "Duration";
+            this.duration.Name = "duration";
+            // 
             // frmInvoice
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -220,5 +256,9 @@
         private System.Windows.Forms.Button btnPath;
         private System.Windows.Forms.Button btnIdentityDelete;
         private System.Windows.Forms.Button btnClientDelete;
+        private System.Windows.Forms.DataGridViewTextBoxColumn id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn cost;
+        private System.Windows.Forms.DataGridViewTextBoxColumn description;
+        private System.Windows.Forms.DataGridViewTextBoxColumn duration;
     }
 }

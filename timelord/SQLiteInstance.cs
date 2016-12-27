@@ -8,8 +8,11 @@ using System.Collections.Generic;
 namespace timelord
 {
     /// <summary>
-    /// Manages the tasks database
+    /// A generic SQLite Connection manager class
     /// </summary>
+    /// <remarks>
+    /// This class makes use of Lambda expressions and Delegates
+    /// </remarks>
     public class SQLiteInstance
     {
         private readonly string PathToDatabase;
@@ -26,7 +29,7 @@ namespace timelord
                     ExecuteVoidStatement(c, createQuery);
                 }
             });
-    }
+        }
 
         private SQLiteConnection GetConnection()
         {
@@ -74,11 +77,11 @@ namespace timelord
         /// Gets a standard SQLite table assuming it has a primary key of id 
         /// </summary>
         /// <returns>A datatable containing the table from the SQLite database.</returns>
-        public DataTable GetTable(string tableName, string selectTaskQuery)
+        public DataTable GetTable(string tableName, string selectQuery)
         {
             return ExecuteFunction(c =>
             {
-                using (SQLiteDataAdapter adapter = new SQLiteDataAdapter(selectTaskQuery, c))
+                using (SQLiteDataAdapter adapter = new SQLiteDataAdapter(selectQuery, c))
                 {
                     DataTable dt = new DataTable(tableName);
                     adapter.Fill(dt);
@@ -96,28 +99,31 @@ namespace timelord
         /// <summary>
         /// Commits a datatable to the sqlite database
         /// </summary>
-        /// <param name="d">The datatable to commit</param>
-        public void Commit(DataTable d, string selectTaskQuery)
+        /// <param name="table">The datatable to commit</param>
+        public void Commit(DataTable table, string selectTaskQuery)
         {
             // Execute a void action that needs a database connection
             ExecuteAction(c =>{
 
-                using (SQLiteDataAdapter a = new SQLiteDataAdapter(selectTaskQuery, c))
+                using (SQLiteDataAdapter adapter = new SQLiteDataAdapter(selectTaskQuery, c))
                 {
-                    using (SQLiteCommandBuilder b = new SQLiteCommandBuilder(a))
+                    using (SQLiteCommandBuilder builder = new SQLiteCommandBuilder(adapter))
                     {
-                        a.UpdateCommand = b.GetUpdateCommand();
-                        a.DeleteCommand = b.GetDeleteCommand();
-                        a.InsertCommand = b.GetInsertCommand();
+                        adapter.UpdateCommand = builder.GetUpdateCommand();
+                        adapter.DeleteCommand = builder.GetDeleteCommand();
+                        adapter.InsertCommand = builder.GetInsertCommand();
 
-                        a.RowUpdated += DataAdapter_RowUpdated;
+                        adapter.RowUpdated += DataAdapter_RowUpdated;
 
-                        a.Update(d);
+                        adapter.Update(table);
                     }
                 }
             });
         }
 
+        /// <summary>
+        /// This method is called every time a row is updated and stores the insert id into the DataTable.
+        /// </summary>
         private void DataAdapter_RowUpdated(object sender, System.Data.Common.RowUpdatedEventArgs e)
         {
             if (e.Status == UpdateStatus.Continue && e.StatementType == StatementType.Insert)

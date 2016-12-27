@@ -38,6 +38,8 @@
             this.lblEmail = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.lblRate = new System.Windows.Forms.Label();
+            this.txtRate = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // txtName
@@ -52,7 +54,7 @@
             this.txtPhone.Location = new System.Drawing.Point(63, 105);
             this.txtPhone.Name = "txtPhone";
             this.txtPhone.Size = new System.Drawing.Size(208, 20);
-            this.txtPhone.TabIndex = 1;
+            this.txtPhone.TabIndex = 2;
             // 
             // txtAddress
             // 
@@ -61,7 +63,7 @@
             this.txtAddress.Multiline = true;
             this.txtAddress.Name = "txtAddress";
             this.txtAddress.Size = new System.Drawing.Size(208, 63);
-            this.txtAddress.TabIndex = 2;
+            this.txtAddress.TabIndex = 1;
             // 
             // txtEmail
             // 
@@ -108,24 +110,42 @@
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(63, 158);
+            this.btnSave.Location = new System.Drawing.Point(63, 187);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(75, 23);
-            this.btnSave.TabIndex = 8;
+            this.btnSave.TabIndex = 4;
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // btnCancel
             // 
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.ImageAlign = System.Drawing.ContentAlignment.TopRight;
-            this.btnCancel.Location = new System.Drawing.Point(196, 158);
+            this.btnCancel.Location = new System.Drawing.Point(196, 187);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 9;
+            this.btnCancel.TabIndex = 5;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            // 
+            // lblRate
+            // 
+            this.lblRate.AutoSize = true;
+            this.lblRate.Location = new System.Drawing.Point(14, 164);
+            this.lblRate.Name = "lblRate";
+            this.lblRate.Size = new System.Drawing.Size(37, 26);
+            this.lblRate.TabIndex = 8;
+            this.lblRate.Text = "Hourly\r\nRate";
+            // 
+            // txtRate
+            // 
+            this.txtRate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtRate.Location = new System.Drawing.Point(63, 161);
+            this.txtRate.Name = "txtRate";
+            this.txtRate.Size = new System.Drawing.Size(210, 20);
+            this.txtRate.TabIndex = 9;
             // 
             // frmClient
             // 
@@ -133,7 +153,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(285, 191);
+            this.ClientSize = new System.Drawing.Size(285, 222);
+            this.Controls.Add(this.txtRate);
+            this.Controls.Add(this.lblRate);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.lblEmail);
@@ -166,5 +188,7 @@
         private System.Windows.Forms.Label lblEmail;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Label lblRate;
+        private System.Windows.Forms.TextBox txtRate;
     }
 }

@@ -19,15 +19,31 @@ namespace timelord
         private bool NewClient = false;
         private string SelectQueryString;
 
-        public frmClient(SQLiteInstance db, DataTable clients, string selectQueryString)
+        /// <summary>
+        /// Prepares an empty form
+        /// </summary>
+        /// <param name="clients">The clients table</param>
+        /// <param name="selectQueryString">The select statement used for the command builder</param>
+        public frmClient(SQLiteInstance db, DataTable clients, string selectQueryString, DataRowView identity=null)
         {
             InitializeComponent();
             Db = db;
             Clients = clients;
             NewClient = true;
             SelectQueryString = selectQueryString;
+            if(identity != null)
+            {
+                txtRate.Text = identity.Row["hourly_rate"].ToString();
+            }
         }
 
+        /// <summary>
+        /// Prepares a form with provided client information
+        /// </summary>
+        /// <param name="db">The clients table</param>
+        /// <param name="clients"></param>
+        /// <param name="row">The row from the databse</param>
+        /// <param name="selectQueryString"></param>
         public frmClient(SQLiteInstance db, DataTable clients, DataRowView row, string selectQueryString)
         {
             InitializeComponent();
@@ -36,10 +52,11 @@ namespace timelord
 
             // For some reason its created as an Int64 so it needs to be converted to an Int32
             ClientId = Convert.ToInt32(row["id"]);
-            txtName.Text = row["Name"].ToString();
-            txtAddress.Text = row["Address"].ToString();
-            txtPhone.Text = row["Phone"].ToString();
-            txtEmail.Text = row["Email"].ToString();
+            txtName.Text = row["name"].ToString();
+            txtAddress.Text = row["address"].ToString();
+            txtPhone.Text = row["phone"].ToString();
+            txtEmail.Text = row["email"].ToString();
+            txtRate.Text = row["hourly_rate"].ToString();
 
             SelectQueryString = selectQueryString;
         }
@@ -51,10 +68,10 @@ namespace timelord
                 // clone a new row schema from client table
                 Client = Clients.NewRow();
 
-                Client["Name"] = txtName.Text;
-                Client["Address"] = txtAddress.Text;
-                Client["Phone"] = txtPhone.Text;
-                Client["Email"] = txtEmail.Text;
+                Client["name"] = txtName.Text;
+                Client["address"] = txtAddress.Text;
+                Client["phone"] = txtPhone.Text;
+                Client["email"] = txtEmail.Text;
 
                 Clients.Rows.Add(Client);
                 Db.Commit(Clients, SelectQueryString);
@@ -63,10 +80,10 @@ namespace timelord
                 // find existing client in clients table
                 Client = Clients.Rows.Find(ClientId);
 
-                Client["Name"] = txtName.Text;
-                Client["Address"] = txtAddress.Text;
-                Client["Phone"] = txtPhone.Text;
-                Client["Email"] = txtEmail.Text;
+                Client["name"] = txtName.Text;
+                Client["address"] = txtAddress.Text;
+                Client["phone"] = txtPhone.Text;
+                Client["email"] = txtEmail.Text;
 
                 Db.Commit(Clients, SelectQueryString);
             }

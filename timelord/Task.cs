@@ -7,6 +7,8 @@ namespace timelord
     /// </summary>
     class Task
     {
+        public long Id { get; set; }
+
         public string Description { get; set; }
 
         public TimeSpan Duration
@@ -25,6 +27,8 @@ namespace timelord
         public DateTime BeginDate { get; set; }
         public DateTime EndDate { get; set; }
         public TaskStatus Status { get; set; }
+
+        public long Rate { get; set; }
 
         public Task()
         {
