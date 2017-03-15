@@ -36,6 +36,7 @@ namespace timelord
             this.BeginDate = DateTime.MinValue;
             this.EndDate = DateTime.MinValue;
             this.Status = TaskStatus.UNINVOICED;
+            this.Rate = 0;
         }
     }
 

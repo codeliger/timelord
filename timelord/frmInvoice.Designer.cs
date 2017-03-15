@@ -43,8 +43,8 @@
             this.btnIdentityDelete = new System.Windows.Forms.Button();
             this.btnClientDelete = new System.Windows.Forms.Button();
             this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.duration = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dgvInvoice)).BeginInit();
             this.SuspendLayout();
@@ -132,8 +132,8 @@
             this.dgvInvoice.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvInvoice.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.id,
-            this.cost,
             this.description,
+            this.cost,
             this.duration});
             this.dgvInvoice.Location = new System.Drawing.Point(15, 74);
             this.dgvInvoice.Name = "dgvInvoice";
@@ -192,17 +192,17 @@
             this.id.Name = "id";
             this.id.Visible = false;
             // 
-            // cost
-            // 
-            this.cost.DataPropertyName = "cost";
-            this.cost.HeaderText = "Hourly Cost";
-            this.cost.Name = "cost";
-            // 
             // description
             // 
             this.description.DataPropertyName = "description";
             this.description.HeaderText = "Description";
             this.description.Name = "description";
+            // 
+            // cost
+            // 
+            this.cost.DataPropertyName = "rate";
+            this.cost.HeaderText = "Hourly Cost";
+            this.cost.Name = "cost";
             // 
             // duration
             // 
@@ -257,8 +257,8 @@
         private System.Windows.Forms.Button btnIdentityDelete;
         private System.Windows.Forms.Button btnClientDelete;
         private System.Windows.Forms.DataGridViewTextBoxColumn id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn cost;
         private System.Windows.Forms.DataGridViewTextBoxColumn description;
+        private System.Windows.Forms.DataGridViewTextBoxColumn cost;
         private System.Windows.Forms.DataGridViewTextBoxColumn duration;
     }
 }

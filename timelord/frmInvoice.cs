@@ -3,6 +3,7 @@ using System.Data;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace timelord
 {
@@ -35,8 +36,6 @@ namespace timelord
 
             cbClient.SelectedIndexChanged += CbClient_SelectedIndexChanged;
             cbIdentity.SelectedIndexChanged += CbIdentity_SelectedIndexChanged;
-
-
 
             GetIdentities();
             GetClients();
@@ -88,6 +87,9 @@ namespace timelord
             }
         }
 
+        /// <summary>
+        /// (Re)populates the identities table from the database.
+        /// </summary>
         public void GetIdentities()
         {
             Identities = Db.GetTable("Identity", QueryString.Identity.Select);
@@ -96,6 +98,9 @@ namespace timelord
             cbIdentity.DisplayMember = "Name";
         }
 
+        /// <summary>
+        /// (Re)populates the clients table from the database
+        /// </summary>
         public void GetClients()
         {
             Clients = Db.GetTable("Client", QueryString.Client.Select);
@@ -104,6 +109,9 @@ namespace timelord
             cbClient.DisplayMember = "Name";
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void btnIdentityEdit_Click(object sender, EventArgs e)
         {
             if (cbIdentity.SelectedIndex > -1)
@@ -138,6 +146,12 @@ namespace timelord
             GetClients();
         }
 
+        /// <summary>
+        /// When an identity is deleted from the form:
+        ///     Delete row from table
+        ///     Commit changes to database
+        ///     Repopulate identities table
+        /// </summary>
         private void btnIdentityDelete_Click(object sender, EventArgs e)
         {
             if(cbIdentity.SelectedIndex > -1)
@@ -148,6 +162,12 @@ namespace timelord
             }
         }
 
+        /// <summary>
+        /// When an client is deleted from the form:
+        ///     Delete row from table
+        ///     Commit changes to database
+        ///     Repopulate clients table
+        /// </summary>
         private void btnClientDelete_Click(object sender, EventArgs e)
         {
             if(cbClient.SelectedIndex > -1)

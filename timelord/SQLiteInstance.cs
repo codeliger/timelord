@@ -22,11 +22,11 @@ namespace timelord
             this.PathToDatabase = pathToDatabase;
 
             // Execute each create query
-            ExecuteAction(c =>
+            ExecuteAction(SQLite =>
             {
                 foreach(string createQuery in createQueries)
                 {
-                    ExecuteVoidStatement(c, createQuery);
+                    ExecuteVoidStatement(SQLite, createQuery);
                 }
             });
         }
@@ -42,10 +42,10 @@ namespace timelord
         /// <param name="action">The function to execute.</param>
         private void ExecuteAction(Action<SQLiteConnection> action)
         {
-            using (SQLiteConnection c = GetConnection())
+            using (SQLiteConnection SQLite = GetConnection())
             {
-                c.Open();
-                action(c);
+                SQLite.Open();
+                action(SQLite);
             }
         }
 
@@ -57,16 +57,16 @@ namespace timelord
         /// <returns></returns>
         private T ExecuteFunction<T>(Func<SQLiteConnection,T> function)
         {
-            using (SQLiteConnection c = GetConnection())
+            using (SQLiteConnection SQLite = GetConnection())
             {
-                c.Open();
-                return function(c);
+                SQLite.Open();
+                return function(SQLite);
             }
         }
 
-        private void ExecuteVoidStatement(SQLiteConnection c, string databaseCreateQuery)
+        private void ExecuteVoidStatement(SQLiteConnection SQLite, string databaseCreateQuery)
         {
-            using (SQLiteCommand cmd = c.CreateCommand())
+            using (SQLiteCommand cmd = SQLite.CreateCommand())
             {
                 cmd.CommandText = databaseCreateQuery;
                 cmd.ExecuteNonQuery();
@@ -79,9 +79,9 @@ namespace timelord
         /// <returns>A datatable containing the table from the SQLite database.</returns>
         public DataTable GetTable(string tableName, string selectQuery)
         {
-            return ExecuteFunction(c =>
+            return ExecuteFunction(SQLite =>
             {
-                using (SQLiteDataAdapter adapter = new SQLiteDataAdapter(selectQuery, c))
+                using (SQLiteDataAdapter adapter = new SQLiteDataAdapter(selectQuery, SQLite))
                 {
                     DataTable dt = new DataTable(tableName);
                     adapter.Fill(dt);
@@ -103,9 +103,9 @@ namespace timelord
         public void Commit(DataTable table, string selectTaskQuery)
         {
             // Execute a void action that needs a database connection
-            ExecuteAction(c =>{
+            ExecuteAction(SQLite =>{
 
-                using (SQLiteDataAdapter adapter = new SQLiteDataAdapter(selectTaskQuery, c))
+                using (SQLiteDataAdapter adapter = new SQLiteDataAdapter(selectTaskQuery, SQLite))
                 {
                     using (SQLiteCommandBuilder builder = new SQLiteCommandBuilder(adapter))
                     {
