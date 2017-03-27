@@ -15,9 +15,9 @@ namespace timelord
         private DataRow Client;
         private DataTable Clients;
         private SQLiteInstance Db;
-        private int ClientId;
-        private bool NewClient = false;
-        private string SelectQueryString;
+        private readonly int ClientId;
+        private readonly bool NewClient = false;
+        private readonly string SelectQueryString;
 
         /// <summary>
         /// Prepares an empty form
