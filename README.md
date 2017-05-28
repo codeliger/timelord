@@ -1,10 +1,14 @@
 # Timelord
 
 ## What is it?
-
 Timelord is a time tracking and invoicing application written in C# using Windows Forms.
 
+![The timelord window](http://i.imgur.com/qZPQPbz.jpg)
+
+![The innvoice screen](http://i.imgur.com/65DEIhQ.jpg)
+
 Here is the timelord workflow:
+* Open or create a timesheet.
 * Create a task and start it.
 * Stop the task.
 * Select the task and select create invoice.
