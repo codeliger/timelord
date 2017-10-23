@@ -21,5 +21,5 @@ If you are planning to use Timelord you can check the releases page on github: h
 If there are no releases that means timelord is not ready for use and may have bugs.
 
 To run it in Visual Studio you can clone the repository and start the solution file in Visual Studio.
-Timelord uses this package: https://github.com/Fody/Costura to embedd depencies.
+Timelord uses this package: https://github.com/Fody/Costura to embedd dependencies.
 This allows timelord to run as a single executable and not have any dll files required to run with it.
