@@ -1,5 +1,11 @@
 # Timelord
 
+## **Discontinued**
+
+In school we learned C# Windows forms but never learned Windows Presentation Foundation.
+I am having some issues implementing the functionality I invisioned due to the limitations of Windows Forms.
+I will have to rewrite this application when I have time using WPF.
+
 ## What is it?
 Timelord is a time tracking and invoicing application written in C# using Windows Forms.
 
